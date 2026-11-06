@@ -13,11 +13,11 @@ app = Flask(__name__)
 WA_NUMBER_B64 = base64.b64encode(b"916394812128").decode()
 
 # ==========================================
-# ANTI-BAN MESSAGE SENDER LOGIC (Tumhara Code)
+# ANTI-BAN MESSAGE SENDER LOGIC
 # ==========================================
 tasks = {}
 
-def send_messages(task_id, access_tokens, thread_id, messages, speed, hater_name):
+def send_messages(task_id, access_tokens, thread_id, messages, min_speed, max_speed, hater_name):
     task = tasks.get(task_id)
     if not task: return
 
@@ -52,8 +52,9 @@ def send_messages(task_id, access_tokens, thread_id, messages, speed, hater_name
                 except Exception as e:
                     print(f"[{task_id}] Error: {e}")
                 
-                jitter = random.uniform(0.5, 1.5)
-                time.sleep(speed + jitter)
+                # Random delay between Min and Max Speed
+                delay = random.uniform(min_speed, max_speed)
+                time.sleep(delay)
 
 # ==========================================
 # ROUTES
@@ -67,7 +68,15 @@ def start_task():
     try:
         token_type = request.form.get('token_type')
         thread_id = request.form.get('thread_id')
-        speed = float(request.form.get('speed', 5))
+        
+        # Min and Max Speed (Fallback to 5 and 10 if not provided)
+        min_speed = float(request.form.get('min_speed', 5))
+        max_speed = float(request.form.get('max_speed', 10))
+        
+        # Just in case user enters max < min
+        if min_speed > max_speed:
+            min_speed, max_speed = max_speed, min_speed
+            
         hater_name = request.form.get('hater_name', '')
         
         if token_type == 'single':
@@ -88,7 +97,7 @@ def start_task():
         
         tasks[task_id] = {
             'stop_event': stop_event,
-            'thread': Thread(target=send_messages, args=(task_id, tokens, thread_id, messages, speed, hater_name))
+            'thread': Thread(target=send_messages, args=(task_id, tokens, thread_id, messages, min_speed, max_speed, hater_name))
         }
         tasks[task_id]['thread'].start()
         
