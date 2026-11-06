@@ -14,7 +14,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # --- BRAND INFO ---
 BRAND_NAME = "Eriic + Anurag Mishra"
-# Number hidden publicly — encoded and decoded on client side
 WA_NUMBER_B64 = base64.b64encode(b"916394812128").decode()
 
 # Default UA for Graph API calls (FB4A style)
@@ -25,6 +24,9 @@ DEFAULT_UA = (
     "FBSV/14;FBCA/arm64-v8a:null;FBDM/density=3.0,width=1344,height=2992;"
     "FB_FW/1;FBRV/0;]"
 )
+
+# API Versions to try (Fallback mechanism)
+API_VERSIONS = ["v20.0", "v19.0", "v18.0"]
 
 
 def get_mimetype(filename):
@@ -38,42 +40,22 @@ def human_delay(min_s=0.3, max_s=0.8):
     time.sleep(random.uniform(min_s, max_s))
 
 
-def send_fb_message(token, thread_id, message_text=None, file_path=None, file_name=None, custom_ua=None):
+def build_payload(message_text, file_path, file_name):
     """
-    Sends a message to a Facebook thread using a Personal Account Token (EAADV7).
+    Builds the payload for personal account tokens.
     """
-    if not token or not thread_id:
-        return {"success": False, "error": "Token or Thread ID is missing"}
-
-    # Personal Account Endpoint: POST /{thread_id}
-    url = f"https://graph.facebook.com/v19.0/{thread_id}"
-    
-    ua = custom_ua if custom_ua else DEFAULT_UA
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "User-Agent": ua,
-        "Content-Type": "application/json"
-    }
-
-    # Construct the message object
-    # For personal accounts, the payload is the message content itself
     message_obj = {}
 
-    # 1. Add Text if present
     if message_text:
         message_obj["message"] = message_text
 
-    # 2. Add File Attachment if present
     if file_path and os.path.exists(file_path):
         try:
             with open(file_path, 'rb') as f:
                 file_bytes = f.read()
-            
             file_b64 = base64.b64encode(file_bytes).decode('utf-8')
             mime_type = get_mimetype(file_name)
             
-            # Attachment structure for Personal Account Tokens
             attachment = {
                 "type": "file",
                 "payload": {
@@ -84,48 +66,84 @@ def send_fb_message(token, thread_id, message_text=None, file_path=None, file_na
                     "mime_type": mime_type
                 }
             }
-            
-            # Initialize attachments list if not present
             if "attachments" not in message_obj:
                 message_obj["attachments"] = []
-            
             message_obj["attachments"].append(attachment)
         except Exception as e:
-            return {"success": False, "error": f"Failed to read/process file: {str(e)}"}
+            return None, f"Failed to process file: {str(e)}"
 
-    # 3. Fallback if no text and no file
     if not message_text and not (file_path and os.path.exists(file_path)):
         message_obj["message"] = "Hello from Automation Bot"
 
-    # The final payload is just the message object
-    payload = message_obj
+    return message_obj, None
 
-    try:
-        human_delay()
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
-        res_json = response.json()
+
+def send_fb_message(token, thread_id, message_text=None, file_path=None, file_name=None, custom_ua=None):
+    """
+    Sends a message using a Personal Account Token (EAADV7).
+    Tries multiple API versions to ensure compatibility.
+    """
+    if not token or not thread_id:
+        return {"success": False, "error": "Token or Thread ID is missing"}
+
+    payload, err = build_payload(message_text, file_path, file_name)
+    if err:
+        return {"success": False, "error": err}
+
+    ua = custom_ua if custom_ua else DEFAULT_UA
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "User-Agent": ua,
+        "Content-Type": "application/json"
+    }
+
+    last_error = None
+
+    # Try different API versions
+    for version in API_VERSIONS:
+        url = f"https://graph.facebook.com/{version}/{thread_id}"
         
-        # Check for success
-        # Personal account API returns the message object directly (e.g., {"id": "..."})
-        if response.status_code == 200:
-            return {
-                "success": True,
-                "message_id": res_json.get('id', 'N/A'),
-                "thread_id": thread_id,
-                "response": res_json
-            }
-        else:
-            return {
-                "success": False,
-                "error": res_json.get('error', {}).get('message', 'Unknown API Error'),
-                "code": res_json.get('error', {}).get('code', response.status_code),
-                "response": res_json
-            }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        try:
+            human_delay()
+            response = requests.post(url, headers=headers, json=payload, timeout=30)
+            res_json = response.json()
+            
+            # Success Check
+            if response.status_code == 200:
+                return {
+                    "success": True,
+                    "message_id": res_json.get('id', 'N/A'),
+                    "thread_id": thread_id,
+                    "api_version": version,
+                    "response": res_json
+                }
+            
+            # Capture error for fallback
+            error_msg = res_json.get('error', {}).get('message', 'Unknown Error')
+            error_code = res_json.get('error', {}).get('code', response.status_code)
+            last_error = {"code": error_code, "message": error_msg, "version": version}
+            
+            # If error is 100 (Object does not exist), trying other versions might not help 
+            # unless the ID is actually a Page ID or the token lacks permissions.
+            # But we continue to try in case it's a version-specific quirk.
+            if error_code != 100:
+                continue
+            else:
+                # If Code 100, it's likely a token/ID mismatch. 
+                # Breaking early if it's clearly a permission issue.
+                if 'permissions' in error_msg.lower() or 'does not exist' in error_msg.lower():
+                    # It might still work on an older version if the object structure changed, 
+                    # but usually 100 is definitive. Let's try the next one just in case.
+                    pass
+
+        except Exception as e:
+            last_error = {"code": "EXCEPTION", "message": str(e), "version": version}
+
+    return {
+        "success": False,
+        "error": "All API versions failed",
+        "last_error": last_error
+    }
 
 
 # --- ROUTES ---
@@ -157,7 +175,6 @@ def send_message():
 
     if file and file.filename:
         file_name = file.filename
-        # Sanitize filename to prevent path traversal
         safe_name = os.path.basename(file_name)
         file_path = os.path.join(UPLOAD_FOLDER, safe_name)
         file.save(file_path)
