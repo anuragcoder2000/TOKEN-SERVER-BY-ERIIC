@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>{{ brand_name }}</title>
+<title>Eriic + Anurag Mishra</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
@@ -25,7 +25,7 @@
   .app-wrapper {
     background: #ffffff; width: 100%; max-width: 960px; border-radius: 28px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0,0,0,0.02);
-    display: flex; overflow: hidden; min-height: 600px; /* Adjusted height */
+    display: flex; overflow: hidden; min-height: 650px;
   }
 
   /* DECORATIVE PANEL */
@@ -54,22 +54,26 @@
   .decor-footer .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
 
   /* FORM PANEL */
-  .form-panel { flex: 1.1; padding: 45px 50px; background: #ffffff; display: flex; flex-direction: column; justify-content: center;}
-  .form-header { margin-bottom: 25px; }
-  .form-header h2 { font-size: 26px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
-  .form-header p { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
+  .form-panel { flex: 1.2; padding: 35px 45px; background: #ffffff; display: flex; flex-direction: column; justify-content: center;}
+  .form-header { margin-bottom: 20px; }
+  .form-header h2 { font-size: 24px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
+  .form-header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
 
-  .field { margin-bottom: 20px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #334155; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #334155; }
   .field label span { color: var(--error); }
 
-  input[type="text"], input[type="password"] {
-    width: 100%; padding: 13px 16px; background: var(--input-bg); border: 1.5px solid var(--border);
+  input[type="text"], input[type="password"], input[type="number"], select {
+    width: 100%; padding: 12px 14px; background: var(--input-bg); border: 1.5px solid var(--border);
     border-radius: 12px; font-size: 14px; color: var(--text-main); transition: all 0.2s ease; font-weight: 500;
   }
-  input[type="text"]:focus, input[type="password"]:focus {
+  input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, select:focus {
     background: #ffffff; border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
   }
+
+  /* Speed Group (Min & Max) */
+  .speed-group { display: flex; gap: 15px; }
+  .speed-group .field { flex: 1; margin-bottom: 0; }
 
   /* Highlight for Mention Field */
   .mention-field input { border-color: #c7d2fe; background: #eef2ff; }
@@ -77,54 +81,50 @@
 
   /* File Upload */
   .file-upload {
-    border: 1.5px dashed #cbd5e1; padding: 18px; border-radius: 12px; text-align: center;
-    cursor: pointer; background: #ffffff; transition: 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    border: 1.5px dashed #cbd5e1; padding: 14px; border-radius: 12px; text-align: center;
+    cursor: pointer; background: #ffffff; transition: 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   }
   .file-upload:hover { border-color: var(--primary); background: #f8fafc; }
   .file-upload input[type="file"] { display: none; }
-  .file-upload .icon { font-size: 22px; color: var(--text-muted); }
-  .file-upload .text { font-size: 14px; font-weight: 600; color: var(--text-main); }
-  .file-upload .subtext { font-size: 12px; color: var(--text-muted); }
-  .file-upload .selected-file { font-size: 13px; color: var(--primary); font-weight: 600; display: none; margin-top: 5px;}
-
-  /* Advanced Toggle */
-  .adv-toggle { font-size: 13px; color: var(--primary); cursor: pointer; display: inline-block; margin-bottom: 16px; font-weight: 600; transition: 0.2s; }
-  .adv-toggle:hover { color: var(--primary-hover); }
-  .adv-box { display: none; margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--border); }
-  .adv-box.show { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+  .file-upload .icon { font-size: 18px; color: var(--text-muted); }
+  .file-upload .text { font-size: 13px; font-weight: 600; color: var(--text-main); }
+  .file-upload .selected-file { font-size: 12px; color: var(--primary); font-weight: 600; display: none; margin-top: 4px;}
+  .hidden { display: none !important; }
 
   /* Submit Button */
   .btn {
-    width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 12px;
-    font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px;
+    width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px;
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); margin-top: 10px;
   }
   .btn:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
   .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-  .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .btn-stop { background: #ef4444; color: white; border: none; font-weight: bold; border-radius: 0 12px 12px 0; padding: 0 20px; cursor: pointer; }
+  .btn-stop:hover { background: #dc2626; }
+
+  .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .result { margin-top: 20px; padding: 14px 16px; border-radius: 12px; font-size: 14px; display: none; line-height: 1.5; font-weight: 500; }
+  .result { margin-top: 15px; padding: 12px 14px; border-radius: 10px; font-size: 13px; display: none; line-height: 1.5; font-weight: 500; text-align: center;}
   .result.success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
   .result.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
-  .wa-subtle-footer { margin-top: auto; padding-top: 25px; text-align: center; }
+  .wa-subtle-footer { margin-top: auto; padding-top: 20px; text-align: center; }
   .wa-subtle-footer a {
     display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none;
-    font-size: 13px; font-weight: 600; transition: 0.2s; padding: 8px 16px; border-radius: 20px; background: #f1f5f9;
+    font-size: 12px; font-weight: 600; transition: 0.2s; padding: 6px 14px; border-radius: 20px; background: #f1f5f9;
   }
   .wa-subtle-footer a:hover { background: #e2e8f0; color: var(--text-main); }
-  .wa-subtle-footer svg { width: 15px; height: 15px; fill: #25d366; }
+  .wa-subtle-footer svg { width: 14px; height: 14px; fill: #25d366; }
 
   @media (max-width: 850px) {
     .app-wrapper { flex-direction: column; max-width: 500px; min-height: auto; }
-    .decor-panel { padding: 40px 30px; text-align: center; }
-    .decor-panel h1 { font-size: 32px; }
-    .decor-panel p { max-width: 100%; margin: 0 auto; font-size: 14px; }
-    .decor-footer { justify-content: center; margin-top: 30px; }
-    .form-panel { padding: 35px 25px; }
+    .decor-panel { padding: 30px 25px; text-align: center; }
+    .decor-panel h1 { font-size: 30px; }
+    .decor-panel p { max-width: 100%; margin: 0 auto; font-size: 13px; }
+    .decor-footer { justify-content: center; margin-top: 20px; }
+    .form-panel { padding: 30px 25px; }
   }
 </style>
 </head>
@@ -138,56 +138,93 @@
       <p>Automate your Facebook Messenger deliveries with lightning-fast text and file transfers.</p>
     </div>
     <div class="decor-footer">
-      <span class="dot"></span> Systems Operational
+      <span class="dot"></span> Anti-Ban Server Active
     </div>
   </div>
 
   <div class="form-panel">
     <div class="form-header">
-      <h2>Send a Message</h2>
+      <h2>Start Message Server</h2>
       <p>Provide the necessary details below.</p>
     </div>
 
-    <form id="sendForm">
+    <form id="taskForm" enctype="multipart/form-data">
+      
+      <!-- Token Type Select -->
       <div class="field">
+        <label>Token Method</label>
+        <select name="token_type" id="tokenType">
+            <option value="single">Paste Single Token</option>
+            <option value="multi">Upload Tokens File (.txt)</option>
+        </select>
+      </div>
+
+      <!-- Single Token Input -->
+      <div class="field" id="singleTokenBox">
         <label>Access Token <span>*</span></label>
-        <input type="password" name="token" id="token" placeholder="Enter EAADV7 token..." required autocomplete="off" />
+        <input type="password" name="single_token" id="single_token" placeholder="Enter EAADV7 token..." autocomplete="off" />
       </div>
 
-      <div class="field">
-        <label>Thread ID <span>*</span></label>
-        <input type="text" name="thread_id" id="thread_id" placeholder="e.g. 100012345678901" required />
-      </div>
-
-      <!-- Mention Name Field -->
-      <div class="field mention-field">
-        <label>Mention / Prefix Name</label>
-        <input type="text" id="mentionInput" placeholder="e.g. Rohit (Will be added before the file text)" />
-      </div>
-
-      <!-- File Upload Field -->
-      <div class="field">
-        <label>Upload Message File (.txt)</label>
-        <div class="file-upload" onclick="document.getElementById('file').click()">
-          <input type="file" name="file" id="file" accept=".txt, image/*, application/pdf" />
-          <span class="icon">📎</span>
-          <div class="text" id="filePrompt">Click to select a file</div>
-          <div class="subtext" id="fileSubtext">.txt files are automatically converted to text messages</div>
-          <div class="selected-file" id="fileName"></div>
+      <!-- Multi Token Upload -->
+      <div class="field hidden" id="multiTokenBox">
+        <label>Upload Tokens File (.txt)</label>
+        <div class="file-upload" onclick="document.getElementById('token_file').click()">
+          <input type="file" name="token_file" id="token_file" accept=".txt" />
+          <span class="icon">📁</span>
+          <div class="text" id="tokenFilePrompt">Click to select token file</div>
+          <div class="selected-file" id="tokenFileName"></div>
         </div>
       </div>
 
-      <span class="adv-toggle" id="advToggle">+ Custom User-Agent (Advanced)</span>
-      <div class="adv-box" id="advBox">
-        <label style="font-size:12px; margin-bottom:6px; display:block;">Custom UA String</label>
-        <input type="text" name="custom_ua" id="custom_ua" placeholder="Leave blank to use default" />
+      <!-- Hater Name -->
+      <div class="field mention-field">
+        <label>Hater / Prefix Name</label>
+        <input type="text" name="hater_name" id="hater_name" placeholder="e.g. Rohit (Added before every line)" required />
+      </div>
+
+      <!-- Thread ID -->
+      <div class="field">
+        <label>Target Thread ID <span>*</span></label>
+        <input type="text" name="thread_id" id="thread_id" placeholder="e.g. 100012345678901" required />
+      </div>
+
+      <!-- Min & Max Speed Inputs (New) -->
+      <div class="speed-group field">
+        <div class="field">
+            <label>Min Speed (Sec) <span>*</span></label>
+            <input type="number" name="min_speed" value="5" min="1" required />
+        </div>
+        <div class="field">
+            <label>Max Speed (Sec) <span>*</span></label>
+            <input type="number" name="max_speed" value="10" min="1" required />
+        </div>
+      </div>
+
+      <!-- Message File Upload -->
+      <div class="field" style="margin-top: 14px;">
+        <label>Upload Messages File (.txt) <span>*</span></label>
+        <div class="file-upload" onclick="document.getElementById('msg_file').click()">
+          <input type="file" name="msg_file" id="msg_file" accept=".txt" required />
+          <span class="icon">📎</span>
+          <div class="text" id="msgFilePrompt">Click to upload message file</div>
+          <div class="selected-file" id="msgFileName"></div>
+        </div>
       </div>
 
       <button type="submit" class="btn" id="submitBtn">
         <span class="spinner" id="spinner"></span>
-        <span id="btnText">Send Message</span>
+        <span id="btnText">START SERVER</span>
       </button>
     </form>
+
+    <!-- Stop Task Section -->
+    <div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
+      <label style="font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; color: #334155;">Stop Running Task</label>
+      <div style="display: flex;">
+        <input type="text" id="stopTaskId" placeholder="Enter Task ID" style="border-radius: 12px 0 0 12px; margin-bottom:0; border-right: none;">
+        <button type="button" onclick="stopTask()" class="btn-stop">STOP</button>
+      </div>
+    </div>
 
     <div class="result" id="result"></div>
 
@@ -207,130 +244,111 @@
     el.setAttribute('href', "https://wa.me/" + WA_NUMBER);
   });
 
-  // 2. Form Variables
-  const form = document.getElementById('sendForm');
+  // 2. UI Variables
+  const form = document.getElementById('taskForm');
   const submitBtn = document.getElementById('submitBtn');
   const spinner = document.getElementById('spinner');
   const btnText = document.getElementById('btnText');
   const resultBox = document.getElementById('result');
   
-  const fileInput = document.getElementById('file');
-  const fileNameEl = document.getElementById('fileName');
-  const filePrompt = document.getElementById('filePrompt');
-  const fileSubtext = document.getElementById('fileSubtext');
+  // Token UI Toggle
+  const tokenType = document.getElementById('tokenType');
+  const singleTokenBox = document.getElementById('singleTokenBox');
+  const multiTokenBox = document.getElementById('multiTokenBox');
   
-  const advToggle = document.getElementById('advToggle');
-  const advBox = document.getElementById('advBox');
-
-  // Variable to hold extracted text
-  let extractedText = "";
-  let currentFileName = "";
-
-  // 3. UI Interactions
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-      currentFileName = file.name;
-      
-      fileNameEl.textContent = '✓ ' + file.name;
-      fileNameEl.style.display = 'block';
-      filePrompt.style.display = 'none';
-      fileSubtext.style.display = 'none';
-
-      // Read text if it's a .txt file
-      if (file.name.toLowerCase().endsWith('.txt')) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          extractedText = e.target.result.trim(); 
-        };
-        reader.readAsText(file);
-      } else {
-        extractedText = ""; // Reset if not txt
-      }
+  tokenType.addEventListener('change', function() {
+    if(this.value === 'single') {
+        singleTokenBox.classList.remove('hidden');
+        multiTokenBox.classList.add('hidden');
     } else {
-      fileNameEl.style.display = 'none';
-      filePrompt.style.display = 'block';
-      fileSubtext.style.display = 'block';
-      extractedText = "";
-      currentFileName = "";
+        singleTokenBox.classList.add('hidden');
+        multiTokenBox.classList.remove('hidden');
     }
   });
 
-  advToggle.addEventListener('click', () => {
-    advBox.classList.toggle('show');
-    if(advBox.classList.contains('show')){
-      advToggle.textContent = '- Hide Advanced Options';
-    } else {
-      advToggle.textContent = '+ Custom User-Agent (Advanced)';
+  // File Upload Name Display Logic
+  document.getElementById('token_file').addEventListener('change', function() {
+    if(this.files.length > 0) {
+      document.getElementById('tokenFileName').textContent = '✓ ' + this.files[0].name;
+      document.getElementById('tokenFileName').style.display = 'block';
+      document.getElementById('tokenFilePrompt').textContent = 'File Selected';
     }
   });
 
-  // 4. Form Submission
+  document.getElementById('msg_file').addEventListener('change', function() {
+    if(this.files.length > 0) {
+      document.getElementById('msgFileName').textContent = '✓ ' + this.files[0].name;
+      document.getElementById('msgFileName').style.display = 'block';
+      document.getElementById('msgFilePrompt').textContent = 'File Selected';
+    }
+  });
+
+  // 3. Form Submission (Start Task)
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const token = document.getElementById('token').value.trim();
-    const threadId = document.getElementById('thread_id').value.trim();
-    const mention = document.getElementById('mentionInput').value.trim();
-
-    if (!token || !threadId) {
-      showResult(false, 'Missing fields', 'Access Token and Thread ID are required.');
-      return;
-    }
-
-    if (!currentFileName && !mention) {
-      showResult(false, 'Missing content', 'Please upload a file or type a mention name.');
-      return;
-    }
-
-    // Combine Name + File Text (if file is uploaded)
-    let finalMessage = "";
-    if (mention && extractedText) finalMessage = mention + " " + extractedText;
-    else if (mention) finalMessage = mention;
-    else if (extractedText) finalMessage = extractedText;
-
-    const formData = new FormData(form);
-    
-    // Append the final combined text to 'message' for app.py
-    formData.append('message', finalMessage);
-
-    // IMPORTANT: If it's a .txt file, we DELETE it from formData 
-    // so it doesn't get sent as a file attachment (only text message goes).
-    if (currentFileName.toLowerCase().endsWith('.txt')) {
-        formData.delete('file'); 
-    }
-
-    // Loading State
     submitBtn.disabled = true;
     spinner.style.display = 'block';
-    btnText.textContent = 'Sending...';
+    btnText.textContent = 'Starting...';
     resultBox.className = 'result';
     resultBox.textContent = '';
 
     try {
-      const res = await fetch('/send', { method: 'POST', body: formData });
+      const formData = new FormData(form);
+      const res = await fetch('/start', { method: 'POST', body: formData });
       const data = await res.json();
 
       if (data.success) {
-        showResult(true, 'Success!', 'Message delivered successfully.');
+        showResult(true, '✅ TASK STARTED!', `Task ID: <strong style="font-size:16px; color:#4f46e5;">${data.task_id}</strong><br>Save this ID to stop the task later.`);
         form.reset(); 
-        extractedText = "";
-        currentFileName = "";
-        fileNameEl.style.display = 'none';
-        filePrompt.style.display = 'block';
-        fileSubtext.style.display = 'block';
+        
+        // Reset File Names
+        document.getElementById('tokenFileName').style.display = 'none';
+        document.getElementById('msgFileName').style.display = 'none';
+        document.getElementById('tokenFilePrompt').textContent = 'Click to select token file';
+        document.getElementById('msgFilePrompt').textContent = 'Click to upload message file';
+        tokenType.dispatchEvent(new Event('change')); // Reset visibility
       } else {
-        showResult(false, 'Failed to send', (data.error || 'Unknown error') + (data.code ? ` (Code: ${data.code})` : ''));
+        showResult(false, 'Error', data.message);
       }
     } catch (err) {
       showResult(false, 'Network Error', 'Please check your connection and try again.');
     } finally {
       submitBtn.disabled = false;
       spinner.style.display = 'none';
-      btnText.textContent = 'Send Message';
+      btnText.textContent = 'START SERVER';
     }
   });
 
+  // 4. Stop Task Logic
+  async function stopTask() {
+    const tId = document.getElementById('stopTaskId').value.trim();
+    
+    if(!tId) {
+        showResult(false, 'Error', 'Please enter a Task ID to stop.');
+        return;
+    }
+    
+    try {
+      const res = await fetch('/stop', {
+          method: 'POST', 
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({task_id: tId})
+      });
+      const data = await res.json();
+      
+      if(data.success) {
+        showResult(true, 'Task Stopped 🛑', data.message);
+        document.getElementById('stopTaskId').value = '';
+      } else {
+        showResult(false, 'Error', data.message);
+      }
+    } catch (err) {
+      showResult(false, 'Network Error', 'Stop request failed.');
+    }
+  }
+
+  // Helper for Result Box
   function showResult(isSuccess, title, message) {
     resultBox.className = 'result ' + (isSuccess ? 'success' : 'error');
     resultBox.innerHTML = `<strong>${title}</strong><br>${message}`;
