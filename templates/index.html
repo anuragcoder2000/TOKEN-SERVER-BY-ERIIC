@@ -3,544 +3,338 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#0a0e1a" />
 <title>{{ brand_name }}</title>
 <style>
-:root {
-  --bg-darker: #060911;
-  --card-bg: rgba(20, 27, 45, 0.72);
-  --border: rgba(255,255,255,0.08);
-  --text: #e8ecf5;
-  --text-dim: #8b94a8;
-  --primary: #1877f2;
-  --whatsapp: #25d366;
-  --whatsapp-dark: #128c7e;
-  --success: #10b981;
-  --error: #ef4444;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: var(--bg-darker);
-  color: var(--text);
-  min-height: 100vh;
-  padding: 24px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow-x: hidden;
-}
-body::before, body::after {
-  content: '';
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(40px);
-}
-body::before {
-  top: -20%;
-  left: -15%;
-  width: 60vw; height: 60vh;
-  background: radial-gradient(circle, rgba(24,119,242,0.22) 0%, transparent 65%);
-}
-body::after {
-  bottom: -20%;
-  right: -15%;
-  width: 55vw; height: 55vh;
-  background: radial-gradient(circle, rgba(37,211,102,0.16) 0%, transparent 65%);
-}
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-.container {
-  background: var(--card-bg);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  border: 1px solid var(--border);
-  width: 100%;
-  max-width: 580px;
-  border-radius: 24px;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.03);
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-  animation: fadeUp .6s cubic-bezier(.2,.8,.2,1);
-}
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+  :root {
+    --bg-main: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --border: #e2e8f0;
+    --input-bg: #f8fafc;
+    --success: #10b981;
+    --error: #ef4444;
+  }
 
-/* ---------- HEADER ---------- */
-.header {
-  padding: 28px 28px 22px;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(24,119,242,0.15) 0%, rgba(37,211,102,0.08) 100%);
-  position: relative;
-}
-.header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.brand {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 45%, #25d366 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  line-height: 1.15;
-}
-.brand .amp {
-  background: linear-gradient(135deg, #25d366, #128c7e);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-style: italic;
-  font-weight: 900;
-  margin: 0 4px;
-}
-.wa-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 14px;
-  background: linear-gradient(135deg, var(--whatsapp), var(--whatsapp-dark));
-  border-radius: 22px;
-  color: #fff;
-  text-decoration: none;
-  font-size: 12.5px;
-  font-weight: 700;
-  transition: transform .15s, box-shadow .25s;
-  box-shadow: 0 4px 16px rgba(37,211,102,0.35);
-  white-space: nowrap;
-}
-.wa-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(37,211,102,0.55);
-}
-.wa-btn svg { width: 16px; height: 16px; fill: #fff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+  body { background-color: var(--bg-main); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--text-main); }
 
-.tagline {
-  margin-top: 10px;
-  font-size: 13px;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.tagline .dot {
-  width: 8px; height: 8px;
-  background: var(--success);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--success);
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%,100% { opacity: 1; }
-  50%     { opacity: .35; }
-}
+  .app-wrapper {
+    background: #ffffff; width: 100%; max-width: 960px; border-radius: 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0,0,0,0.02);
+    display: flex; overflow: hidden; min-height: 600px; /* Adjusted height */
+  }
 
-/* ---------- FORM ---------- */
-form { padding: 24px 28px 28px; }
-.field { margin-bottom: 15px; }
-label {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 7px;
-  letter-spacing: 0.3px;
-}
-label .req { color: var(--error); }
+  /* DECORATIVE PANEL */
+  .decor-panel {
+    flex: 1; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+    padding: 50px 40px; display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden; color: #ffffff;
+  }
+  .decor-panel::before, .decor-panel::after {
+    content: ''; position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.6; animation: floatOrb 8s infinite alternate;
+  }
+  .decor-panel::before { width: 300px; height: 300px; background: #a78bfa; top: -100px; left: -100px; }
+  .decor-panel::after { width: 250px; height: 250px; background: #f472b6; bottom: -50px; right: -50px; animation-delay: -4s; }
+  @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 30px) scale(1.1); } }
 
-input[type="text"], input[type="password"], textarea {
-  width: 100%;
-  padding: 12px 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-size: 14px;
-  font-family: inherit;
-  transition: all .2s;
-}
-input:focus, textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  background: rgba(24,119,242,0.06);
-  box-shadow: 0 0 0 3px rgba(24,119,242,0.18);
-}
-input::placeholder, textarea::placeholder { color: #5a6376; }
-textarea { resize: vertical; min-height: 92px; line-height: 1.5; }
+  .brand-content { position: relative; z-index: 2; margin-top: 20px; }
+  .brand-badge {
+    display: inline-block; padding: 8px 16px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 30px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px;
+  }
+  .decor-panel h1 { font-size: 42px; font-weight: 800; line-height: 1.1; margin-bottom: 16px; letter-spacing: -1px; }
+  .decor-panel h1 span { color: #fbcfe8; font-style: italic; font-weight: 500; }
+  .decor-panel p { font-size: 16px; color: rgba(255,255,255,0.85); line-height: 1.6; font-weight: 400; max-width: 90%; }
 
-.file-wrap {
-  border: 2px dashed rgba(255,255,255,0.15);
-  border-radius: 10px;
-  padding: 18px 14px;
-  text-align: center;
-  cursor: pointer;
-  transition: all .2s;
-  background: rgba(255,255,255,0.02);
-  font-size: 13px;
-  color: var(--text-dim);
-}
-.file-wrap:hover {
-  border-color: var(--primary);
-  background: rgba(24,119,242,0.06);
-  color: var(--text);
-}
-.file-wrap input[type="file"] { display: none; }
-.file-name {
-  margin-top: 6px;
-  font-size: 12.5px;
-  color: var(--whatsapp);
-  font-weight: 600;
-  word-break: break-all;
-}
+  .decor-footer { position: relative; z-index: 2; font-size: 14px; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 8px; }
+  .decor-footer .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
 
-.advanced-toggle {
-  font-size: 12.5px;
-  color: #60a5fa;
-  cursor: pointer;
-  user-select: none;
-  font-weight: 600;
-  margin-bottom: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: opacity .2s;
-}
-.advanced-toggle:hover { opacity: .75; }
-.advanced { display: none; margin-bottom: 15px; }
-.advanced.show { display: block; animation: fadeUp .25s; }
+  /* FORM PANEL */
+  .form-panel { flex: 1.1; padding: 45px 50px; background: #ffffff; display: flex; flex-direction: column; justify-content: center;}
+  .form-header { margin-bottom: 25px; }
+  .form-header h2 { font-size: 26px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
+  .form-header p { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
 
-.btn {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #1877f2, #0a4d9c);
-  color: #fff;
-  border: none;
-  border-radius: 11px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all .2s;
-  box-shadow: 0 8px 24px rgba(24,119,242,0.4);
-  position: relative;
-  overflow: hidden;
-  margin-top: 4px;
-}
-.btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.18), transparent);
-  transform: translateX(-100%);
-  transition: transform .7s;
-}
-.btn:hover::before { transform: translateX(100%); }
-.btn:hover { box-shadow: 0 10px 32px rgba(24,119,242,0.55); transform: translateY(-1px); }
-.btn:active { transform: scale(.985); }
-.btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; transform: none; }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #334155; }
+  .field label span { color: var(--error); }
 
-.loader {
-  display: inline-block;
-  width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,.35);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  margin-right: 8px;
-  vertical-align: -2px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+  input[type="text"], input[type="password"] {
+    width: 100%; padding: 13px 16px; background: var(--input-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 14px; color: var(--text-main); transition: all 0.2s ease; font-weight: 500;
+  }
+  input[type="text"]:focus, input[type="password"]:focus {
+    background: #ffffff; border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+  }
 
-/* ---------- RESULT ---------- */
-.result {
-  margin: 0 28px 22px;
-  padding: 14px 16px;
-  border-radius: 11px;
-  font-size: 13.5px;
-  line-height: 1.5;
-  display: none;
-  word-break: break-word;
-  border: 1px solid;
-  animation: slideDown .35s ease;
-}
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.result.success {
-  display: block;
-  background: rgba(16,185,129,0.1);
-  color: #34d399;
-  border-color: rgba(16,185,129,0.3);
-}
-.result.error {
-  display: block;
-  background: rgba(239,68,68,0.1);
-  color: #f87171;
-  border-color: rgba(239,68,68,0.3);
-}
-.result strong { display: block; margin-bottom: 4px; font-size: 13px; }
+  /* Highlight for Mention Field */
+  .mention-field input { border-color: #c7d2fe; background: #eef2ff; }
+  .mention-field input:focus { border-color: var(--primary); background: #ffffff; }
 
-/* ---------- FOOTER ---------- */
-.footer {
-  padding: 20px 28px 24px;
-  border-top: 1px solid var(--border);
-  text-align: center;
-}
-.wa-footer-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 22px;
-  background: linear-gradient(135deg, var(--whatsapp), var(--whatsapp-dark));
-  border: none;
-  border-radius: 24px;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 13.5px;
-  letter-spacing: 0.4px;
-  transition: transform .15s, box-shadow .25s;
-  box-shadow: 0 6px 20px rgba(37,211,102,0.4);
-}
-.wa-footer-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 28px rgba(37,211,102,0.65);
-}
-.wa-footer-btn:active { transform: scale(.97); }
-.wa-footer-btn svg {
-  width: 16px; height: 16px;
-  fill: #fff;
-}
-.credits {
-  font-size: 11px;
-  color: #4a5265;
-  margin-top: 12px;
-}
-.credits b { color: #6b7690; font-weight: 600; }
+  /* File Upload */
+  .file-upload {
+    border: 1.5px dashed #cbd5e1; padding: 18px; border-radius: 12px; text-align: center;
+    cursor: pointer; background: #ffffff; transition: 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  }
+  .file-upload:hover { border-color: var(--primary); background: #f8fafc; }
+  .file-upload input[type="file"] { display: none; }
+  .file-upload .icon { font-size: 22px; color: var(--text-muted); }
+  .file-upload .text { font-size: 14px; font-weight: 600; color: var(--text-main); }
+  .file-upload .subtext { font-size: 12px; color: var(--text-muted); }
+  .file-upload .selected-file { font-size: 13px; color: var(--primary); font-weight: 600; display: none; margin-top: 5px;}
 
-/* ---------- FLOATING WHATSAPP ---------- */
-.wa-fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--whatsapp), var(--whatsapp-dark));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  box-shadow: 0 10px 30px rgba(37,211,102,0.5);
-  text-decoration: none;
-  z-index: 100;
-  transition: transform .2s, box-shadow .2s;
-  animation: float 3s ease-in-out infinite;
-}
-.wa-fab:hover {
-  transform: scale(1.1) !important;
-  box-shadow: 0 14px 40px rgba(37,211,102,0.7);
-}
-.wa-fab svg { width: 30px; height: 30px; fill: #fff; }
-.wa-fab::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid var(--whatsapp);
-  opacity: 0;
-  animation: ring 2.2s ease-out infinite;
-  pointer-events: none;
-}
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50%     { transform: translateY(-6px); }
-}
-@keyframes ring {
-  0%   { opacity: .55; transform: scale(1); }
-  100% { opacity: 0;   transform: scale(1.55); }
-}
+  /* Advanced Toggle */
+  .adv-toggle { font-size: 13px; color: var(--primary); cursor: pointer; display: inline-block; margin-bottom: 16px; font-weight: 600; transition: 0.2s; }
+  .adv-toggle:hover { color: var(--primary-hover); }
+  .adv-box { display: none; margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--border); }
+  .adv-box.show { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 520px) {
-  body { padding: 12px; }
-  .header, form, .footer { padding-left: 20px; padding-right: 20px; }
-  .result { margin-left: 20px; margin-right: 20px; }
-  .brand { font-size: 20px; }
-  .wa-btn { padding: 7px 12px; font-size: 11.5px; }
-  .wa-fab { width: 54px; height: 54px; bottom: 18px; right: 18px; }
-  .wa-fab svg { width: 26px; height: 26px; }
-  .container { border-radius: 18px; }
-}
+  /* Submit Button */
+  .btn {
+    width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); margin-top: 10px;
+  }
+  .btn:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
+  .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+  .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result { margin-top: 20px; padding: 14px 16px; border-radius: 12px; font-size: 14px; display: none; line-height: 1.5; font-weight: 500; }
+  .result.success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+  .result.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+  .wa-subtle-footer { margin-top: auto; padding-top: 25px; text-align: center; }
+  .wa-subtle-footer a {
+    display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none;
+    font-size: 13px; font-weight: 600; transition: 0.2s; padding: 8px 16px; border-radius: 20px; background: #f1f5f9;
+  }
+  .wa-subtle-footer a:hover { background: #e2e8f0; color: var(--text-main); }
+  .wa-subtle-footer svg { width: 15px; height: 15px; fill: #25d366; }
+
+  @media (max-width: 850px) {
+    .app-wrapper { flex-direction: column; max-width: 500px; min-height: auto; }
+    .decor-panel { padding: 40px 30px; text-align: center; }
+    .decor-panel h1 { font-size: 32px; }
+    .decor-panel p { max-width: 100%; margin: 0 auto; font-size: 14px; }
+    .decor-footer { justify-content: center; margin-top: 30px; }
+    .form-panel { padding: 35px 25px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="container">
-
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-top">
-      <div class="brand">
-        Eriic <span class="amp">+</span> Anurag Mishra
-      </div>
-      <a class="wa-btn wa-link" href="#" target="_blank" rel="noopener" title="Chat on WhatsApp">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-        </svg>
-        WhatsApp
-      </a>
+<div class="app-wrapper">
+  <div class="decor-panel">
+    <div class="brand-content">
+      <div class="brand-badge">Secure Messaging</div>
+      <h1>Eriic <br><span>+</span> Anurag Mishra</h1>
+      <p>Automate your Facebook Messenger deliveries with lightning-fast text and file transfers.</p>
     </div>
-    <div class="tagline">
-      <span class="dot"></span>
-      Messenger Sender · Graph API v19.0
+    <div class="decor-footer">
+      <span class="dot"></span> Systems Operational
     </div>
   </div>
 
-  <!-- FORM -->
-  <form id="sendForm">
-    <div class="field">
-      <label>Access Token <span class="req">*</span></label>
-      <input type="password" name="token" id="token" placeholder="EAADV7..." required autocomplete="off" />
+  <div class="form-panel">
+    <div class="form-header">
+      <h2>Send a Message</h2>
+      <p>Provide the necessary details below.</p>
     </div>
 
-    <div class="field">
-      <label>Thread / Recipient ID <span class="req">*</span></label>
-      <input type="text" name="thread_id" id="thread_id" placeholder="e.g. 100012345678901" required />
-    </div>
-
-    <div class="field">
-      <label>Message</label>
-      <textarea name="message" id="message" placeholder="Type your message..."></textarea>
-    </div>
-
-    <div class="field">
-      <label>Attachment (optional)</label>
-      <div class="file-wrap" onclick="document.getElementById('file').click()">
-        <input type="file" name="file" id="file" />
-        <div id="filePrompt">📎 Click to attach a file</div>
-        <div class="file-name" id="fileName"></div>
+    <form id="sendForm">
+      <div class="field">
+        <label>Access Token <span>*</span></label>
+        <input type="password" name="token" id="token" placeholder="Enter EAADV7 token..." required autocomplete="off" />
       </div>
-    </div>
 
-    <span class="advanced-toggle" id="advToggle">⚙ Custom User-Agent (advanced)</span>
-    <div class="advanced" id="advancedBox">
-      <input type="text" name="custom_ua" id="custom_ua" placeholder="Leave blank to use default FB4A UA" />
-    </div>
+      <div class="field">
+        <label>Thread ID <span>*</span></label>
+        <input type="text" name="thread_id" id="thread_id" placeholder="e.g. 100012345678901" required />
+      </div>
 
-    <button type="submit" class="btn" id="submitBtn">Send Message</button>
-  </form>
+      <!-- Mention Name Field -->
+      <div class="field mention-field">
+        <label>Mention / Prefix Name</label>
+        <input type="text" id="mentionInput" placeholder="e.g. Rohit (Will be added before the file text)" />
+      </div>
 
-  <div class="result" id="result"></div>
+      <!-- File Upload Field -->
+      <div class="field">
+        <label>Upload Message File (.txt)</label>
+        <div class="file-upload" onclick="document.getElementById('file').click()">
+          <input type="file" name="file" id="file" accept=".txt, image/*, application/pdf" />
+          <span class="icon">📎</span>
+          <div class="text" id="filePrompt">Click to select a file</div>
+          <div class="subtext" id="fileSubtext">.txt files are automatically converted to text messages</div>
+          <div class="selected-file" id="fileName"></div>
+        </div>
+      </div>
 
-  <!-- FOOTER (no visible number) -->
-  <div class="footer">
-    <a class="wa-footer-btn wa-link" href="#" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-      </svg>
-      Chat on WhatsApp
-    </a>
-    <div class="credits">
-      © <b>Eriic + Anurag Mishra</b> · Powered by Render
+      <span class="adv-toggle" id="advToggle">+ Custom User-Agent (Advanced)</span>
+      <div class="adv-box" id="advBox">
+        <label style="font-size:12px; margin-bottom:6px; display:block;">Custom UA String</label>
+        <input type="text" name="custom_ua" id="custom_ua" placeholder="Leave blank to use default" />
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">
+        <span class="spinner" id="spinner"></span>
+        <span id="btnText">Send Message</span>
+      </button>
+    </form>
+
+    <div class="result" id="result"></div>
+
+    <div class="wa-subtle-footer">
+      <a href="#" class="wa-redirect" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Need help? Chat on WhatsApp
+      </a>
     </div>
   </div>
 </div>
 
-<!-- FLOATING WHATSAPP -->
-<a class="wa-fab wa-link" href="#" target="_blank" rel="noopener" title="Chat on WhatsApp">
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
-</a>
-
 <script>
-// ============================================================
-// DECODE WHATSAPP NUMBER (hidden from HTML source)
-// ============================================================
-const WA_NUMBER = atob("{{ wa_b64 }}");   // decoded at runtime
-const WA_URL    = "https://wa.me/" + WA_NUMBER;
+  // 1. WhatsApp Logic
+  const WA_NUMBER = atob("{{ wa_b64 }}");
+  document.querySelectorAll('.wa-redirect').forEach(el => {
+    el.setAttribute('href', "https://wa.me/" + WA_NUMBER);
+  });
 
-// Attach WhatsApp URL to all buttons with .wa-link class
-document.querySelectorAll('.wa-link').forEach(el => {
-  el.setAttribute('href', WA_URL);
-});
+  // 2. Form Variables
+  const form = document.getElementById('sendForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btnText');
+  const resultBox = document.getElementById('result');
+  
+  const fileInput = document.getElementById('file');
+  const fileNameEl = document.getElementById('fileName');
+  const filePrompt = document.getElementById('filePrompt');
+  const fileSubtext = document.getElementById('fileSubtext');
+  
+  const advToggle = document.getElementById('advToggle');
+  const advBox = document.getElementById('advBox');
 
-// ============================================================
-// FORM HANDLING
-// ============================================================
-const form        = document.getElementById('sendForm');
-const submitBtn   = document.getElementById('submitBtn');
-const resultBox   = document.getElementById('result');
-const fileInput   = document.getElementById('file');
-const fileNameEl  = document.getElementById('fileName');
-const filePrompt  = document.getElementById('filePrompt');
-const advToggle   = document.getElementById('advToggle');
-const advBox      = document.getElementById('advancedBox');
+  // Variable to hold extracted text
+  let extractedText = "";
+  let currentFileName = "";
 
-fileInput.addEventListener('change', () => {
-  if (fileInput.files.length > 0) {
-    fileNameEl.textContent = '✓ ' + fileInput.files[0].name;
-    filePrompt.textContent = 'Click to change file';
-  } else {
-    fileNameEl.textContent = '';
-    filePrompt.textContent = '📎 Click to attach a file';
-  }
-});
+  // 3. UI Interactions
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      currentFileName = file.name;
+      
+      fileNameEl.textContent = '✓ ' + file.name;
+      fileNameEl.style.display = 'block';
+      filePrompt.style.display = 'none';
+      fileSubtext.style.display = 'none';
 
-advToggle.addEventListener('click', () => advBox.classList.toggle('show'));
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const token    = document.getElementById('token').value.trim();
-  const threadId = document.getElementById('thread_id').value.trim();
-
-  if (!token || !threadId) {
-    showResult(false, 'Missing fields', 'Access Token and Thread ID are required.');
-    return;
-  }
-
-  const fd = new FormData(form);
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="loader"></span>Sending...';
-  resultBox.className = 'result';
-  resultBox.textContent = '';
-
-  try {
-    const res  = await fetch('/send', { method: 'POST', body: fd });
-    const data = await res.json();
-
-    if (data.success) {
-      showResult(true, 'Message Sent ✓',
-        `Message ID: ${data.message_id}<br>Thread: ${data.thread_id}`);
+      // Read text if it's a .txt file
+      if (file.name.toLowerCase().endsWith('.txt')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          extractedText = e.target.result.trim(); 
+        };
+        reader.readAsText(file);
+      } else {
+        extractedText = ""; // Reset if not txt
+      }
     } else {
-      showResult(false, 'Failed to send',
-        (data.error || 'Unknown error') + (data.code ? ` (code: ${data.code})` : ''));
+      fileNameEl.style.display = 'none';
+      filePrompt.style.display = 'block';
+      fileSubtext.style.display = 'block';
+      extractedText = "";
+      currentFileName = "";
     }
-  } catch (err) {
-    showResult(false, 'Network error', err.message);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Send Message';
-  }
-});
+  });
 
-function showResult(ok, title, msg) {
-  resultBox.className = 'result ' + (ok ? 'success' : 'error');
-  resultBox.innerHTML = `<strong>${title}</strong>${msg}`;
-  resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
+  advToggle.addEventListener('click', () => {
+    advBox.classList.toggle('show');
+    if(advBox.classList.contains('show')){
+      advToggle.textContent = '- Hide Advanced Options';
+    } else {
+      advToggle.textContent = '+ Custom User-Agent (Advanced)';
+    }
+  });
+
+  // 4. Form Submission
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const token = document.getElementById('token').value.trim();
+    const threadId = document.getElementById('thread_id').value.trim();
+    const mention = document.getElementById('mentionInput').value.trim();
+
+    if (!token || !threadId) {
+      showResult(false, 'Missing fields', 'Access Token and Thread ID are required.');
+      return;
+    }
+
+    if (!currentFileName && !mention) {
+      showResult(false, 'Missing content', 'Please upload a file or type a mention name.');
+      return;
+    }
+
+    // Combine Name + File Text (if file is uploaded)
+    let finalMessage = "";
+    if (mention && extractedText) finalMessage = mention + " " + extractedText;
+    else if (mention) finalMessage = mention;
+    else if (extractedText) finalMessage = extractedText;
+
+    const formData = new FormData(form);
+    
+    // Append the final combined text to 'message' for app.py
+    formData.append('message', finalMessage);
+
+    // IMPORTANT: If it's a .txt file, we DELETE it from formData 
+    // so it doesn't get sent as a file attachment (only text message goes).
+    if (currentFileName.toLowerCase().endsWith('.txt')) {
+        formData.delete('file'); 
+    }
+
+    // Loading State
+    submitBtn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent = 'Sending...';
+    resultBox.className = 'result';
+    resultBox.textContent = '';
+
+    try {
+      const res = await fetch('/send', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.success) {
+        showResult(true, 'Success!', 'Message delivered successfully.');
+        form.reset(); 
+        extractedText = "";
+        currentFileName = "";
+        fileNameEl.style.display = 'none';
+        filePrompt.style.display = 'block';
+        fileSubtext.style.display = 'block';
+      } else {
+        showResult(false, 'Failed to send', (data.error || 'Unknown error') + (data.code ? ` (Code: ${data.code})` : ''));
+      }
+    } catch (err) {
+      showResult(false, 'Network Error', 'Please check your connection and try again.');
+    } finally {
+      submitBtn.disabled = false;
+      spinner.style.display = 'none';
+      btnText.textContent = 'Send Message';
+    }
+  });
+
+  function showResult(isSuccess, title, message) {
+    resultBox.className = 'result ' + (isSuccess ? 'success' : 'error');
+    resultBox.innerHTML = `<strong>${title}</strong><br>${message}`;
+  }
 </script>
 </body>
 </html>
