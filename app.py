@@ -13,13 +13,13 @@ from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
 
-# --- CONFIGURATION (Aapke Credentials) ---
-FB_APP_ID = "350685531728"
+# --- CONFIGURATION ---
+FB_APP_ID = "350685531728" 
 FB_APP_SECRET = "62f8ce9f74b12f84c123cc23437a4a32"
-LITE_APP_ID = "275254692598279"
 API_GRAPH = "https://b-graph.facebook.com"
-API_METHOD = "https://api.facebook.com/method"
+API_VERSION = "v19.0" 
 
+# Device Profiles
 DEVICE_PROFILES = [
     {
         "model": "Pixel 8 Pro", "brand": "google", "os": "14", "build": "AP1A.240405.002",
@@ -88,7 +88,9 @@ class DeviceFingerprint:
             "generate_machine_id": "1",
             "currently_logged_in_userid": "0",
             "fb_api_req_friendly_name": "authenticate",
-            "fb_api_caller_class": "com.facebook.auth.login.AuthOperations"
+            "fb_api_caller_class": "com.facebook.auth.login.AuthOperations",
+            "platform": "android",
+            "api_key": FB_APP_ID
         }
 
 class FacebookPasswordEncryptor:
@@ -125,6 +127,7 @@ class FacebookPasswordEncryptor:
             current_time = int(time.time())
             cipher_aes.update(str(current_time).encode("utf-8"))
             encrypted_passwd, auth_tag = cipher_aes.encrypt_and_digest(password.encode("utf-8"))
+            
             buf = io.BytesIO()
             buf.write(bytes([1, int(key_id)]))
             buf.write(iv)
@@ -132,11 +135,13 @@ class FacebookPasswordEncryptor:
             buf.write(encrypted_rand_key)
             buf.write(auth_tag)
             buf.write(encrypted_passwd)
+            
             encoded = base64.b64encode(buf.getvalue()).decode("utf-8")
             return f"#PWD_FB4A:2:{current_time}:{encoded}"
         except Exception as e:
             raise e
 
+# Session Storage
 sessions_data = {}
 recover_sessions = {}
 
@@ -259,20 +264,27 @@ def recover_send():
     session.headers.update(device.get_headers())
     
     data = device.get_base_params()
-    # Fixed endpoint from auth/recover to recover_accounts
-    data.update({'uid': uid, 'credentials_type': 'password', 'fb_api_req_friendly_name': 'recover_accounts'})
+    data.update({
+        'uid': uid, 
+        'credentials_type': 'password', 
+        'fb_api_req_friendly_name': 'recover_accounts',
+        'platform': 'android'
+    })
     
     try:
         res = session.post(f"{API_GRAPH}/recover_accounts", data=data)
         res_data = res.json()
         
         if 'error' in res_data:
-            return jsonify({'error': res_data['error'].get('message', 'Recovery failed')})
+            return jsonify({'error': res_data['error'].get('message', 'Recovery failed'), 'raw': res_data})
             
         rec_id = str(uuid.uuid4())
         recover_sessions[rec_id] = {
-            'uid': uid, 'device': device, 'session': session, 
-            'data': data, 'recovery_code': res_data.get('recovery_code')
+            'uid': uid, 
+            'device': device, 
+            'session': session, 
+            'data': data, 
+            'recovery_code': None
         }
         return jsonify({'success': True, 'recover_id': rec_id, 'message': 'OTP Sent successfully'})
     except Exception as e:
@@ -285,8 +297,11 @@ def recover_verify():
     if not rec_id or rec_id not in recover_sessions: return jsonify({'error': 'Session expired'})
     
     s = recover_sessions[rec_id]
-    # Updated endpoint for verify
-    s['data'].update({'recovery_code': otp, 'fb_api_req_friendly_name': 'recover_verify_code'})
+    s['data'].update({
+        'recovery_code': otp, 
+        'fb_api_req_friendly_name': 'recover_verify_code',
+        'platform': 'android'
+    })
     
     try:
         res = s['session'].post(f"{API_GRAPH}/recover_accounts/verify", data=s['data'])
@@ -295,8 +310,11 @@ def recover_verify():
         if 'error' in res_data:
             return jsonify({'error': res_data['error'].get('message', 'Invalid OTP')})
         
-        s['recovery_token'] = res_data.get('recovery_token')
-        return jsonify({'success': True, 'message': 'OTP Verified'})
+        s['recovery_token'] = res_data.get('recovery_token') or res_data.get('token')
+        if not s['recovery_token']:
+             s['recovery_token'] = res_data.get('session_token') 
+             
+        return jsonify({'success': True, 'message': 'OTP Verified', 'token': s['recovery_token']})
     except Exception as e:
         return jsonify({'error': str(e)})
 
@@ -304,31 +322,37 @@ def recover_verify():
 def recover_reset():
     rec_id = request.form.get('recover_id')
     new_password = request.form.get('password')
-    if not rec_id or rec_id not in recover_sessions: return jsonify({'error': 'Session expired'})
+    
+    if not rec_id or rec_id not in recover_sessions: 
+        return jsonify({'error': 'Session expired'})
+    if not new_password: 
+        return jsonify({'error': 'New password required'})
     
     s = recover_sessions[rec_id]
-    if not s.get('recovery_token'): return jsonify({'error': 'Verify OTP first'})
+    if not s.get('recovery_token'): 
+        return jsonify({'error': 'Verify OTP first'})
     
     try:
         pub_key, key_id = FacebookPasswordEncryptor.get_public_key()
         enc_pw = FacebookPasswordEncryptor.encrypt(new_password, pub_key, key_id)
         
-        # Updated endpoint for reset
         s['data'].update({
             'password': enc_pw,
             'recovery_token': s['recovery_token'],
-            'fb_api_req_friendly_name': 'recover_change_password'
+            'fb_api_req_friendly_name': 'recover_change_password',
+            'platform': 'android'
         })
+        
         res = s['session'].post(f"{API_GRAPH}/recover_accounts/change_password", data=s['data'])
         res_data = res.json()
         
         if 'error' in res_data:
-            return jsonify({'error': res_data['error'].get('message', 'Password reset failed')})
+            return jsonify({'error': res_data['error'].get('message', 'Password reset failed'), 'raw': res_data})
             
-        del recover_sessions[rec_id]
         login_res = internal_login(s['uid'], new_password, s['device'], s['session'])
         
         if login_res.get('success'):
+            del recover_sessions[rec_id]
             return jsonify({'success': True, 'token': login_res['token'], 'message': 'Password reset & Logged in!'})
         else:
             return jsonify({'error': f"Password reset hua, par login fail: {login_res.get('error')}"})
