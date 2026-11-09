@@ -14,12 +14,11 @@ from Crypto.Random import get_random_bytes
 app = Flask(__name__)
 
 # --- CONFIGURATION ---
-FB_APP_ID = "350685531728" 
+FB_APP_ID = "350685531728"
 FB_APP_SECRET = "62f8ce9f74b12f84c123cc23437a4a32"
 API_GRAPH = "https://b-graph.facebook.com"
-API_VERSION = "v19.0" 
+API_VERSION = "v19.0"
 
-# Device Profiles
 DEVICE_PROFILES = [
     {
         "model": "Pixel 8 Pro", "brand": "google", "os": "14", "build": "AP1A.240405.002",
@@ -141,7 +140,6 @@ class FacebookPasswordEncryptor:
         except Exception as e:
             raise e
 
-# Session Storage
 sessions_data = {}
 recover_sessions = {}
 
@@ -310,11 +308,8 @@ def recover_verify():
         if 'error' in res_data:
             return jsonify({'error': res_data['error'].get('message', 'Invalid OTP')})
         
-        s['recovery_token'] = res_data.get('recovery_token') or res_data.get('token')
-        if not s['recovery_token']:
-             s['recovery_token'] = res_data.get('session_token') 
-             
-        return jsonify({'success': True, 'message': 'OTP Verified', 'token': s['recovery_token']})
+        s['recovery_token'] = res_data.get('recovery_token') or res_data.get('token') or res_data.get('session_token')
+        return jsonify({'success': True, 'message': 'OTP Verified'})
     except Exception as e:
         return jsonify({'error': str(e)})
 
@@ -322,11 +317,8 @@ def recover_verify():
 def recover_reset():
     rec_id = request.form.get('recover_id')
     new_password = request.form.get('password')
-    
-    if not rec_id or rec_id not in recover_sessions: 
-        return jsonify({'error': 'Session expired'})
-    if not new_password: 
-        return jsonify({'error': 'New password required'})
+    if not rec_id or rec_id not in recover_sessions: return jsonify({'error': 'Session expired'})
+    if not new_password: return jsonify({'error': 'New password required'})
     
     s = recover_sessions[rec_id]
     if not s.get('recovery_token'): 
@@ -349,14 +341,14 @@ def recover_reset():
         if 'error' in res_data:
             return jsonify({'error': res_data['error'].get('message', 'Password reset failed'), 'raw': res_data})
             
+        # Login with the new password to get the standard access_token
         login_res = internal_login(s['uid'], new_password, s['device'], s['session'])
         
         if login_res.get('success'):
             del recover_sessions[rec_id]
             return jsonify({'success': True, 'token': login_res['token'], 'message': 'Password reset & Logged in!'})
         else:
-            return jsonify({'error': f"Password reset hua, par login fail: {login_res.get('error')}"})
-            
+            return jsonify({'error': f"Password reset successful, but auto-login failed: {login_res.get('error')}"})
     except Exception as e:
         return jsonify({'error': str(e)})
 
