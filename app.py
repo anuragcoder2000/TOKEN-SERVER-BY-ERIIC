@@ -13,7 +13,7 @@ from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
 
-# --- CONFIGURATION ---
+# --- CONFIGURATION (Aapke Credentials) ---
 FB_APP_ID = "350685531728"
 FB_APP_SECRET = "62f8ce9f74b12f84c123cc23437a4a32"
 LITE_APP_ID = "275254692598279"
@@ -144,7 +144,6 @@ def human_delay(min_s=0.3, max_s=0.8):
     time.sleep(random.uniform(min_s, max_s))
 
 def internal_login(uid, raw_password, device, session):
-    """Reusable function to get token after password is set"""
     try:
         pub_key, key_id = FacebookPasswordEncryptor.get_public_key()
         encrypted_password = FacebookPasswordEncryptor.encrypt(raw_password, pub_key, key_id)
@@ -260,16 +259,16 @@ def recover_send():
     session.headers.update(device.get_headers())
     
     data = device.get_base_params()
-    data.update({'uid': uid, 'credentials_type': 'password', 'fb_api_req_friendly_name': 'recover'})
+    # Fixed endpoint from auth/recover to recover_accounts
+    data.update({'uid': uid, 'credentials_type': 'password', 'fb_api_req_friendly_name': 'recover_accounts'})
     
     try:
-        res = session.post(f"{API_GRAPH}/auth/recover", data=data)
+        res = session.post(f"{API_GRAPH}/recover_accounts", data=data)
         res_data = res.json()
         
         if 'error' in res_data:
             return jsonify({'error': res_data['error'].get('message', 'Recovery failed')})
             
-        # Session save karo next steps ke liye
         rec_id = str(uuid.uuid4())
         recover_sessions[rec_id] = {
             'uid': uid, 'device': device, 'session': session, 
@@ -286,16 +285,16 @@ def recover_verify():
     if not rec_id or rec_id not in recover_sessions: return jsonify({'error': 'Session expired'})
     
     s = recover_sessions[rec_id]
+    # Updated endpoint for verify
     s['data'].update({'recovery_code': otp, 'fb_api_req_friendly_name': 'recover_verify_code'})
     
     try:
-        res = s['session'].post(f"{API_GRAPH}/auth/recover/verify_code", data=s['data'])
+        res = s['session'].post(f"{API_GRAPH}/recover_accounts/verify", data=s['data'])
         res_data = res.json()
         
         if 'error' in res_data:
             return jsonify({'error': res_data['error'].get('message', 'Invalid OTP')})
         
-        # Save recovery_token
         s['recovery_token'] = res_data.get('recovery_token')
         return jsonify({'success': True, 'message': 'OTP Verified'})
     except Exception as e:
@@ -311,23 +310,21 @@ def recover_reset():
     if not s.get('recovery_token'): return jsonify({'error': 'Verify OTP first'})
     
     try:
-        # 1. Encrypt New Password
         pub_key, key_id = FacebookPasswordEncryptor.get_public_key()
         enc_pw = FacebookPasswordEncryptor.encrypt(new_password, pub_key, key_id)
         
-        # 2. Change Password
+        # Updated endpoint for reset
         s['data'].update({
             'password': enc_pw,
             'recovery_token': s['recovery_token'],
             'fb_api_req_friendly_name': 'recover_change_password'
         })
-        res = s['session'].post(f"{API_GRAPH}/auth/recover/change_password", data=s['data'])
+        res = s['session'].post(f"{API_GRAPH}/recover_accounts/change_password", data=s['data'])
         res_data = res.json()
         
         if 'error' in res_data:
             return jsonify({'error': res_data['error'].get('message', 'Password reset failed')})
             
-        # 3. JUGAD: Turant naye password se login karo!
         del recover_sessions[rec_id]
         login_res = internal_login(s['uid'], new_password, s['device'], s['session'])
         
