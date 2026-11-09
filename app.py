@@ -13,11 +13,11 @@ from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
 
-# --- CONFIGURATION ---
+# --- CONFIGURATION (Graph API v23.0) ---
 FB_APP_ID = "350685531728"
 FB_APP_SECRET = "62f8ce9f74b12f84c123cc23437a4a32"
 API_GRAPH = "https://b-graph.facebook.com"
-API_VERSION = "v19.0"
+API_VERSION = "v23.0"
 
 DEVICE_PROFILES = [
     {
@@ -36,7 +36,6 @@ class DeviceFingerprint:
         self.device_id = str(uuid.uuid4())
         self.family_device_id = str(uuid.uuid4())
         self.adid = str(uuid.uuid4())
-        
         self.os_version = profile["os"]
         self.device_model = profile["model"]
         self.device_brand = profile["brand"]
@@ -105,7 +104,7 @@ class FacebookPasswordEncryptor:
                 'fb_api_caller_class': 'com.facebook.auth.login.AuthOperations',
                 'access_token': f'{FB_APP_ID}|{FB_APP_SECRET}'
             }
-            response = requests.post(url, params=params).json()
+            response = requests.post(url, params=params, timeout=15).json()
             return response.get('public_key'), str(response.get('key_id', '25'))
         except Exception:
             return None, "25"
@@ -140,11 +139,17 @@ class FacebookPasswordEncryptor:
         except Exception as e:
             raise e
 
+# Session Storage (with TTL)
 sessions_data = {}
 recover_sessions = {}
 
 def human_delay(min_s=0.3, max_s=0.8):
     time.sleep(random.uniform(min_s, max_s))
+
+def cleanup_sessions():
+    now = time.time()
+    expired = [k for k, v in recover_sessions.items() if now - v.get('timestamp', 0) > 600]
+    for k in expired: del recover_sessions[k]
 
 def internal_login(uid, raw_password, device, session):
     try:
@@ -153,7 +158,11 @@ def internal_login(uid, raw_password, device, session):
         login_data = device.get_base_params()
         login_data.update({"email": uid, "password": encrypted_password})
 
-        response = session.post(f"{API_GRAPH}/auth/login", data=login_data)
+        response = session.post(f"{API_GRAPH}/auth/login", data=login_data, timeout=20)
+        
+        if response.status_code == 429:
+            return {'success': False, 'error': 'Rate limited. Please wait.', 'error_code': 429}
+
         res_data = response.json()
         
         if 'access_token' in res_data:
@@ -192,7 +201,11 @@ def login():
         login_data.update({"email": uid, "password": encrypted_password})
 
         human_delay()
-        response = session.post(f"{API_GRAPH}/auth/login", data=login_data)
+        response = session.post(f"{API_GRAPH}/auth/login", data=login_data, timeout=20)
+        
+        if response.status_code == 429:
+            return jsonify({'error': 'Rate limited. Please try again later.', 'error_code': 429})
+
         res_data = response.json()
         
         if 'access_token' in res_data:
@@ -208,7 +221,7 @@ def login():
                 sessions_data[session_id] = {'uid': uid, 'err_data': err_data, 'device': device, 'session': session, 'login_data': login_data}
                 return jsonify({'two_factor': True, 'session_id': session_id, 'device_approval': 'login_first_factor' in err_data})
             
-            return jsonify({'success': False, 'error': err.get('message', 'Login failed')})
+            return jsonify({'success': False, 'error': err.get('message', 'Login failed'), 'error_code': err.get('code')})
     except Exception as e:
         return jsonify({'error': str(e)})
 
@@ -234,7 +247,11 @@ def two_factor():
         login_data['machine_id'] = err_data.get('machine_id', device.device_id)
 
     try:
-        response = session.post(f"{API_GRAPH}/auth/login", data=login_data)
+        response = session.post(f"{API_GRAPH}/auth/login", data=login_data, timeout=20)
+        
+        if response.status_code == 429:
+            return jsonify({'success': False, 'error': 'Rate limited', 'error_code': 429})
+
         res_data = response.json()
         
         if 'access_token' in res_data:
@@ -245,7 +262,7 @@ def two_factor():
             if not otp and res_data['error'].get('code') in [317, 459, 1348136]: 
                 return jsonify({'success': False, 'waiting': True})
             del sessions_data[session_id]
-            return jsonify({'success': False, 'error': res_data['error'].get('message', 'Failed')})
+            return jsonify({'success': False, 'error': res_data['error'].get('message', 'Failed'), 'error_code': res_data['error'].get('code')})
     except Exception as e:
         return jsonify({'error': str(e)})
 
@@ -257,6 +274,7 @@ def recover_send():
     uid = request.form.get('uid')
     if not uid: return jsonify({'error': 'Email/Phone required'})
     
+    cleanup_sessions()
     device = DeviceFingerprint()
     session = requests.Session()
     session.headers.update(device.get_headers())
@@ -270,7 +288,11 @@ def recover_send():
     })
     
     try:
-        res = session.post(f"{API_GRAPH}/recover_accounts", data=data)
+        res = session.post(f"{API_GRAPH}/recover_accounts", data=data, timeout=20)
+        
+        if res.status_code == 429:
+            return jsonify({'error': 'Rate limited. Try again later.', 'error_code': 429})
+
         res_data = res.json()
         
         if 'error' in res_data:
@@ -282,7 +304,7 @@ def recover_send():
             'device': device, 
             'session': session, 
             'data': data, 
-            'recovery_code': None
+            'timestamp': time.time()
         }
         return jsonify({'success': True, 'recover_id': rec_id, 'message': 'OTP Sent successfully'})
     except Exception as e:
@@ -302,11 +324,11 @@ def recover_verify():
     })
     
     try:
-        res = s['session'].post(f"{API_GRAPH}/recover_accounts/verify", data=s['data'])
+        res = s['session'].post(f"{API_GRAPH}/recover_accounts/verify", data=s['data'], timeout=20)
         res_data = res.json()
         
         if 'error' in res_data:
-            return jsonify({'error': res_data['error'].get('message', 'Invalid OTP')})
+            return jsonify({'error': res_data['error'].get('message', 'Invalid OTP'), 'raw': res_data})
         
         s['recovery_token'] = res_data.get('recovery_token') or res_data.get('token') or res_data.get('session_token')
         return jsonify({'success': True, 'message': 'OTP Verified'})
@@ -335,13 +357,12 @@ def recover_reset():
             'platform': 'android'
         })
         
-        res = s['session'].post(f"{API_GRAPH}/recover_accounts/change_password", data=s['data'])
+        res = s['session'].post(f"{API_GRAPH}/recover_accounts/change_password", data=s['data'], timeout=20)
         res_data = res.json()
         
         if 'error' in res_data:
             return jsonify({'error': res_data['error'].get('message', 'Password reset failed'), 'raw': res_data})
             
-        # Login with the new password to get the standard access_token
         login_res = internal_login(s['uid'], new_password, s['device'], s['session'])
         
         if login_res.get('success'):
