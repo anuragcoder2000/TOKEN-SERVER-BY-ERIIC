@@ -13,29 +13,37 @@ from Crypto.Random import get_random_bytes
 
 app = Flask(__name__)
 
-# --- CONFIGURATION (Graph API v23.0) ---
+# --- CONFIGURATION ---
 FB_APP_ID = "350685531728"
 FB_APP_SECRET = "62f8ce9f74b12f84c123cc23437a4a32"
+LITE_APP_ID = "275254692598279"
 API_GRAPH = "https://b-graph.facebook.com"
-API_VERSION = "v23.0"
+API_METHOD = "https://api.facebook.com/method"
 
+# Device Profiles for Rotation
 DEVICE_PROFILES = [
     {
         "model": "Pixel 8 Pro", "brand": "google", "os": "14", "build": "AP1A.240405.002",
-        "width": 1344, "height": 2992, "density": 3.0, "fbav": "525.0.0.45.105", "fbbv": "650000000"
+        "width": 1344, "height": 2992, "density": 3.0, "fbav": "460.0.0.42.109", "fbbv": "585672584"
+    },
+    {
+        "model": "Pixel 7", "brand": "google", "os": "13", "build": "TQ2A.230605.010",
+        "width": 1080, "height": 2400, "density": 2.625, "fbav": "455.0.0.28.111", "fbbv": "581000000"
     },
     {
         "model": "SM-S918B", "brand": "samsung", "os": "13", "build": "TP1A.220624.014",
-        "width": 1440, "height": 3088, "density": 3.0, "fbav": "525.0.0.45.105", "fbbv": "650000000"
+        "width": 1440, "height": 3088, "density": 3.0, "fbav": "458.0.0.30.105", "fbbv": "583000000"
     }
 ]
 
 class DeviceFingerprint:
     def __init__(self):
         profile = random.choice(DEVICE_PROFILES)
+        
         self.device_id = str(uuid.uuid4())
         self.family_device_id = str(uuid.uuid4())
         self.adid = str(uuid.uuid4())
+        
         self.os_version = profile["os"]
         self.device_model = profile["model"]
         self.device_brand = profile["brand"]
@@ -60,13 +68,14 @@ class DeviceFingerprint:
     def get_headers(self):
         return {
             "User-Agent": self.user_agent,
-            "X-FB-Connection-Quality": "EXCELLENT",
+            "X-FB-Connection-Quality": random.choice(["EXCELLENT", "GOOD"]),
             "X-FB-Connection-Type": "WIFI",
+            "X-FB-Legacy-Httplib": "true",
+            "X-Asbd-Url": "1",
             "Accept": "*/*",
             "Content-Type": "application/x-www-form-urlencoded",
-            "X-FB-Friendly-Name": "authenticate",
-            "X-FB-LDM": "1",
-            "Accept-Language": self.locale.replace('_', '-')
+            "X-FB-Friendly-Name": "com.facebook.katana",
+            "X-FB-LDM": "1"
         }
 
     def get_base_params(self):
@@ -85,10 +94,7 @@ class DeviceFingerprint:
             "generate_session_cookies": "1",
             "generate_machine_id": "1",
             "currently_logged_in_userid": "0",
-            "fb_api_req_friendly_name": "authenticate",
-            "fb_api_caller_class": "com.facebook.auth.login.AuthOperations",
-            "platform": "android",
-            "api_key": FB_APP_ID
+            "fb_api_req_friendly_name": "authenticate"
         }
 
 class FacebookPasswordEncryptor:
@@ -104,16 +110,18 @@ class FacebookPasswordEncryptor:
                 'fb_api_caller_class': 'com.facebook.auth.login.AuthOperations',
                 'access_token': f'{FB_APP_ID}|{FB_APP_SECRET}'
             }
-            response = requests.post(url, params=params, timeout=15).json()
+            response = requests.post(url, params=params).json()
             return response.get('public_key'), str(response.get('key_id', '25'))
-        except Exception:
+        except Exception as e:
+            print(f"Key Fetch Error: {e}")
             return None, "25"
 
     @staticmethod
     def encrypt(password, public_key=None, key_id="25"):
         if public_key is None:
             public_key, key_id = FacebookPasswordEncryptor.get_public_key()
-            if public_key is None: raise Exception("Key fetch failed")
+            if public_key is None: 
+                return password
             
         try:
             rand_key = get_random_bytes(32)
@@ -121,6 +129,7 @@ class FacebookPasswordEncryptor:
             pubkey = RSA.import_key(public_key)
             cipher_rsa = PKCS1_v1_5.new(pubkey)
             encrypted_rand_key = cipher_rsa.encrypt(rand_key)
+            
             cipher_aes = AES.new(rand_key, AES.MODE_GCM, nonce=iv)
             current_time = int(time.time())
             cipher_aes.update(str(current_time).encode("utf-8"))
@@ -137,20 +146,41 @@ class FacebookPasswordEncryptor:
             encoded = base64.b64encode(buf.getvalue()).decode("utf-8")
             return f"#PWD_FB4A:2:{current_time}:{encoded}"
         except Exception as e:
-            raise e
+            print(f"Encryption Error: {e}")
+            return password
 
-# Session Storage (with TTL)
 sessions_data = {}
 recover_sessions = {}
 
 def human_delay(min_s=0.3, max_s=0.8):
     time.sleep(random.uniform(min_s, max_s))
 
-def cleanup_sessions():
-    now = time.time()
-    expired = [k for k, v in recover_sessions.items() if now - v.get('timestamp', 0) > 600]
-    for k in expired: del recover_sessions[k]
+def convert_to_lite_token(master_token, device, session):
+    try:
+        human_delay(0.2, 0.5)
+        headers = device.get_headers()
+        headers['Authorization'] = f"OAuth {master_token}"
+        
+        session.get(f"{API_GRAPH}/me", params={"fields": "id,name", "format": "json"}, headers=headers)
+        
+        human_delay(0.5, 1.0)
+        url = f"{API_METHOD}/auth.getSessionforApp"
+        data = {
+            'access_token': master_token,
+            'format': 'json',
+            'new_app_id': LITE_APP_ID,
+            'generate_session_cookies': '1'
+        }
+        response = session.post(url, data=data, headers=headers)
+        lite_data = response.json()
+        
+        if 'access_token' in lite_data:
+            return lite_data['access_token']
+        return master_token
+    except Exception:
+        return master_token
 
+# Helper for Recovery Auto-Login
 def internal_login(uid, raw_password, device, session):
     try:
         pub_key, key_id = FacebookPasswordEncryptor.get_public_key()
@@ -158,19 +188,17 @@ def internal_login(uid, raw_password, device, session):
         login_data = device.get_base_params()
         login_data.update({"email": uid, "password": encrypted_password})
 
-        response = session.post(f"{API_GRAPH}/auth/login", data=login_data, timeout=20)
-        
-        if response.status_code == 429:
-            return {'success': False, 'error': 'Rate limited. Please wait.', 'error_code': 429}
-
+        response = session.post(f"{API_GRAPH}/auth/login", data=login_data)
         res_data = response.json()
         
         if 'access_token' in res_data:
-            return {'success': True, 'token': res_data['access_token']}
-        
+            master_token = res_data['access_token']
+            final_token = convert_to_lite_token(master_token, device, session)
+            return {'success': True, 'token': final_token}
+            
         if 'error' in res_data:
             err = res_data['error']
-            return {'success': False, 'error': err.get('message', 'Login failed'), 'error_code': err.get('code')}
+            return {'success': False, 'error': err.get('message', 'Login failed')}
             
         return {'success': False, 'error': 'Unknown error'}
     except Exception as e:
@@ -181,100 +209,155 @@ def index():
     return render_template('index.html')
 
 # ==========================================
-# 1. NORMAL LOGIN ROUTE
+# NORMAL LOGIN WITH APPROVAL SUPPORT
 # ==========================================
 @app.route('/login', methods=['POST'])
 def login():
     uid = request.form.get('uid')
     password = request.form.get('password')
-    if not uid or not password: return jsonify({'error': 'Required fields missing'})
+    
+    if not uid or not password:
+        return jsonify({'error': 'Email and Password are required'})
 
     device = DeviceFingerprint()
     session = requests.Session()
     session.headers.update(device.get_headers())
+    session.headers['Authorization'] = f"OAuth {FB_APP_ID}|{FB_APP_SECRET}"
+
+    human_delay()
+    pub_key, key_id = FacebookPasswordEncryptor.get_public_key()
+    encrypted_password = FacebookPasswordEncryptor.encrypt(password, pub_key, key_id)
+
+    login_data = device.get_base_params()
+    login_data.update({
+        "email": uid,
+        "password": encrypted_password
+    })
 
     try:
         human_delay()
-        pub_key, key_id = FacebookPasswordEncryptor.get_public_key()
-        encrypted_password = FacebookPasswordEncryptor.encrypt(password, pub_key, key_id)
-        login_data = device.get_base_params()
-        login_data.update({"email": uid, "password": encrypted_password})
-
-        human_delay()
-        response = session.post(f"{API_GRAPH}/auth/login", data=login_data, timeout=20)
-        
-        if response.status_code == 429:
-            return jsonify({'error': 'Rate limited. Please try again later.', 'error_code': 429})
-
+        response = session.post(f"{API_GRAPH}/auth/login", data=login_data)
         res_data = response.json()
         
         if 'access_token' in res_data:
-            return jsonify({'success': True, 'token': res_data['access_token']})
+            master_token = res_data['access_token']
+            final_token = convert_to_lite_token(master_token, device, session)
+            
+            return jsonify({
+                'success': True, 
+                'token': final_token,
+                'master_token': master_token,
+                'device_id': device.device_id,
+                'user_id': res_data.get('user_id')
+            })
 
         if 'error' in res_data:
             err = res_data['error']
+            err_code = err.get('code')
+            err_msg = err.get('message', '').lower()
             err_data = err.get('error_data', {})
-            is_2fa = err.get('code') in [317, 459] or 'login_first_factor' in err_data or 'approval' in err.get('message', '').lower()
+            
+            is_2fa = err_code in [317, 459] or 'login_first_factor' in err_data or 'approval' in err_msg
             
             if is_2fa:
                 session_id = str(uuid.uuid4())
-                sessions_data[session_id] = {'uid': uid, 'err_data': err_data, 'device': device, 'session': session, 'login_data': login_data}
-                return jsonify({'two_factor': True, 'session_id': session_id, 'device_approval': 'login_first_factor' in err_data})
+                sessions_data[session_id] = {
+                    'uid': uid,
+                    'err_data': err_data,
+                    'device': device,
+                    'session': session,
+                    'login_data': login_data
+                }
+                # Added device_approval flag
+                is_device_approval = 'login_first_factor' in err_data or 'approval' in err_msg
+                return jsonify({
+                    'two_factor': True, 
+                    'session_id': session_id,
+                    'error_code': err_code,
+                    'device_approval': is_device_approval
+                })
             
-            return jsonify({'success': False, 'error': err.get('message', 'Login failed'), 'error_code': err.get('code')})
+            return jsonify({
+                'success': False,
+                'error': err.get('message', 'Login failed'),
+                'error_code': err_code,
+                'error_data': err_data
+            })
+            
     except Exception as e:
         return jsonify({'error': str(e)})
 
 # ==========================================
-# 2. TWO FACTOR ROUTE (Approval / OTP)
+# 2FA / APPROVAL POLLING ROUTE
 # ==========================================
 @app.route('/two_factor', methods=['POST'])
 def two_factor():
     session_id = request.form.get('session_id')
-    otp = request.form.get('otp', '').strip()
-    if not session_id or session_id not in sessions_data: return jsonify({'error': 'Session expired'})
+    otp = request.form.get('otp', '').strip() # Allow empty for polling
+    
+    if not session_id or session_id not in sessions_data:
+        return jsonify({'error': 'Invalid or expired session'})
     
     s = sessions_data[session_id]
-    login_data, err_data, device, session = s['login_data'], s['err_data'], s['device'], s['session']
+    device = s['device']
+    session = s['session']
+    login_data = s['login_data']
+    err_data = s['err_data']
     
     login_data['credentials_type'] = 'two_factor'
-    if otp: login_data['twofactor_code'] = otp
-    else: login_data.pop('twofactor_code', None)
-        
-    if 'uid' in err_data: login_data['userid'] = err_data['uid']
+    if otp: 
+        login_data['twofactor_code'] = otp
+    else:
+        login_data.pop('twofactor_code', None)
+    
+    if 'uid' in err_data:
+        login_data['userid'] = err_data['uid']
     if 'login_first_factor' in err_data:
         login_data['first_factor'] = err_data['login_first_factor']
-        login_data['machine_id'] = err_data.get('machine_id', device.device_id)
+        login_data['machine_id'] = err_data.get('machine_id', err_data['login_first_factor'])
 
     try:
-        response = session.post(f"{API_GRAPH}/auth/login", data=login_data, timeout=20)
-        
-        if response.status_code == 429:
-            return jsonify({'success': False, 'error': 'Rate limited', 'error_code': 429})
-
+        human_delay()
+        response = session.post(f"{API_GRAPH}/auth/login", data=login_data)
         res_data = response.json()
         
         if 'access_token' in res_data:
+            master_token = res_data['access_token']
             del sessions_data[session_id]
-            return jsonify({'success': True, 'token': res_data['access_token']})
+            
+            final_token = convert_to_lite_token(master_token, device, session)
+            
+            return jsonify({
+                'success': True, 
+                'token': final_token,
+                'master_token': master_token,
+                'user_id': res_data.get('user_id')
+            })
             
         if 'error' in res_data:
-            if not otp and res_data['error'].get('code') in [317, 459, 1348136]: 
+            err = res_data['error']
+            # If polling (no OTP) and it's still waiting for approval
+            if not otp and err.get('code') in [317, 459, 1348136]:
                 return jsonify({'success': False, 'waiting': True})
+                
             del sessions_data[session_id]
-            return jsonify({'success': False, 'error': res_data['error'].get('message', 'Failed'), 'error_code': res_data['error'].get('code')})
+            return jsonify({
+                'success': False,
+                'error': err.get('message', '2FA Failed'),
+                'error_code': err.get('code')
+            })
+            
     except Exception as e:
         return jsonify({'error': str(e)})
 
 # ==========================================
-# 3. FORGOT PASSWORD (RECOVERY) ROUTES
+# FORGOT PASSWORD (RECOVERY) ROUTES
 # ==========================================
 @app.route('/recover/send', methods=['POST'])
 def recover_send():
     uid = request.form.get('uid')
     if not uid: return jsonify({'error': 'Email/Phone required'})
     
-    cleanup_sessions()
     device = DeviceFingerprint()
     session = requests.Session()
     session.headers.update(device.get_headers())
@@ -284,15 +367,12 @@ def recover_send():
         'uid': uid, 
         'credentials_type': 'password', 
         'fb_api_req_friendly_name': 'recover_accounts',
-        'platform': 'android'
+        'platform': 'android',
+        'api_key': FB_APP_ID
     })
     
     try:
-        res = session.post(f"{API_GRAPH}/recover_accounts", data=data, timeout=20)
-        
-        if res.status_code == 429:
-            return jsonify({'error': 'Rate limited. Try again later.', 'error_code': 429})
-
+        res = session.post(f"{API_GRAPH}/recover_accounts", data=data)
         res_data = res.json()
         
         if 'error' in res_data:
@@ -324,7 +404,7 @@ def recover_verify():
     })
     
     try:
-        res = s['session'].post(f"{API_GRAPH}/recover_accounts/verify", data=s['data'], timeout=20)
+        res = s['session'].post(f"{API_GRAPH}/recover_accounts/verify", data=s['data'])
         res_data = res.json()
         
         if 'error' in res_data:
@@ -357,12 +437,13 @@ def recover_reset():
             'platform': 'android'
         })
         
-        res = s['session'].post(f"{API_GRAPH}/recover_accounts/change_password", data=s['data'], timeout=20)
+        res = s['session'].post(f"{API_GRAPH}/recover_accounts/change_password", data=s['data'])
         res_data = res.json()
         
         if 'error' in res_data:
             return jsonify({'error': res_data['error'].get('message', 'Password reset failed'), 'raw': res_data})
             
+        # Auto Login and Lite Token Conversion
         login_res = internal_login(s['uid'], new_password, s['device'], s['session'])
         
         if login_res.get('success'):
@@ -375,4 +456,5 @@ def recover_reset():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
+    print(f"Starting FB Login Server on port {port}")
     app.run(host='0.0.0.0', port=port)
